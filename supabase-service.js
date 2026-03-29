@@ -1,4 +1,4 @@
-import { getSupabaseClient, getWorkspaceId, isSupabaseEnabled } from './supabase-client.js';
+﻿import { getSupabaseClient, getWorkspaceId, isSupabaseEnabled } from './supabase-client.js';
 
 function ensureClient() {
   const client = getSupabaseClient();
@@ -23,9 +23,10 @@ export async function signOutCloud() {
 export async function getSessionUser() {
   if (!isSupabaseEnabled()) return null;
   const client = ensureClient();
-  const { data: { user }, error } = await client.auth.getUser();
-  if (error) throw error;
-  return user || null;
+  const { data: { session }, error } = await client.auth.getSession();
+  if (error || !session) return null;
+  return session.user || null;
+}
 }
 
 export async function getProfile(userId) {
