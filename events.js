@@ -9,6 +9,7 @@ export function bindEvents({
   openSidebar,
   closeSidebar,
   closeModal,
+  openModal,
   persist,
   exportHistoricoCsv,
   renderAll,
@@ -70,7 +71,7 @@ export function bindEvents({
           case 'salvar-politica': handleSavePolitica(); break;
           case 'toggle-politica': {
             const cat = actionEl.dataset.cat;
-            data().politica[cat].ativo = !data().politica[cat].ativo;
+            ui().politica[cat].ativo = !ui().politica[cat].ativo;
             persist();
             break;
           }

@@ -115,6 +115,7 @@ export async function initApp() {
     openSidebar: uiApi.openSidebar,
     closeSidebar: uiApi.closeSidebar,
     closeModal: uiApi.closeModal,
+    openModal: uiApi.openModal,
     persist: uiApi.persist,
     exportHistoricoCsv: uiApi.exportHistoricoCsv,
     renderAll: renderers.renderAll,
@@ -146,7 +147,13 @@ export async function initApp() {
     getColab: context.getColab,
   });
 
-  uiApi.ensureSeed();
+  // Modo Supabase: começa sem dados demo. Modo local: carrega seed.
+  if (isSupabaseEnabled()) {
+    FluxoState.bootstrap(null);
+  } else {
+    uiApi.ensureSeed();
+  }
+
   uiApi.setRole(context.auth().currentRole || 'gestor');
 
   if (isSupabaseEnabled()) {
@@ -167,11 +174,13 @@ export async function initApp() {
       console.error('Supabase session bootstrap error', error);
     }
   }
+
   context.App.unsub = FluxoState.subscribe((snapshot) => {
     const user = snapshot?.auth?.currentUser;
     cloudContext.userId = user?.userId || null;
     cloudContext.workspaceId = user?.workspaceId || cloudContext.workspaceId || null;
   });
+
   renderers.renderAll();
   window.FluxoApp = Object.freeze({
     renderAll: renderers.renderAll,
