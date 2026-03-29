@@ -42,7 +42,7 @@ function renderChrome() {
       byId('user-initials').textContent = initials;
       byId('topbar-avatar').textContent = initials;
 
-      ['relatorios','comparativo','verbas','log','politica','colaboradores'].forEach((page) => {
+      ['relatorios','comparativo','verbas','log','politica','colaboradores','usuarios'].forEach((page) => {
         const nav = byId(`nav-${page}`);
         if (nav) nav.style.display = gestor ? '' : 'none';
       });
@@ -446,8 +446,7 @@ function renderAvatarPicker() {
 function resetColabForm() {
       byId('modal-colab-title').textContent = 'Cadastrar Colaborador';
       byId('colab-edit-id').value = '';
-      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-pix','colab-senha'].forEach((id) => { if(byId(id)) byId(id).value = ''; });
-      if(byId('colab-politica')) byId('colab-politica').value = '';
+      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-senha'].forEach((id) => byId(id).value = '');
       byId('colab-status').value = 'ativo';
       App.selectedAvatarColor = COLORS[0];
       renderAvatarPicker();
@@ -463,8 +462,6 @@ function fillColabForm(colab) {
       byId('colab-cpf').value = colab.cpf || '';
       byId('colab-cargo').value = colab.cargo || '';
       byId('colab-cc').value = colab.cc || '';
-      if(byId('colab-pix')) byId('colab-pix').value = colab.pix || '';
-      if(byId('colab-politica')) byId('colab-politica').value = colab.politicaId || '';
       byId('colab-senha').value = '';
       byId('colab-status').value = colab.status || 'ativo';
       App.selectedAvatarColor = colab.color || COLORS[0];
@@ -480,8 +477,6 @@ function showColabDetail(id) {
         <div class="colab-detail-row"><div class="colab-detail-label">Telefone</div><div class="colab-detail-val">${escapeHtml(colab.telefone || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">CPF</div><div class="colab-detail-val">${escapeHtml(colab.cpf || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">Centro</div><div class="colab-detail-val">${escapeHtml(colab.cc || '—')}</div></div>
-        <div class="colab-detail-row"><div class="colab-detail-label">Chave Pix</div><div class="colab-detail-val">${escapeHtml(colab.pix || '—')}</div></div>
-        <div class="colab-detail-row"><div class="colab-detail-label">Política</div><div class="colab-detail-val">${escapeHtml(colab.politicaId || 'Padrão da empresa')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">Status</div><div class="colab-detail-val"><span class="colab-status-badge ${colab.status}">${escapeHtml(colab.status)}</span></div></div>`;
       byId('btn-editar-colab').dataset.id = String(colab.id);
       openModal('modal-colab-detalhe');
@@ -502,6 +497,25 @@ function groupByCategory(despesas) {
       return [...totals.entries()].map(([cat, value]) => ({ label: categoryLabel(cat), value })).sort((a, b) => b.value - a.value);
     }
 
+function renderUsuarios() {
+      const tbody = byId('usuarios-table');
+      if (!tbody) return;
+      const usuarios = FluxoState.get()?.data?._usuarios || [];
+      if (!usuarios.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum usuário cadastrado. Clique em "Novo Usuário" para adicionar.</td></tr>';
+        return;
+      }
+      const roleLabel = { gestor: 'Gestor', gerente: 'Gerente', colaborador: 'Colaborador' };
+      tbody.innerHTML = usuarios.map((u) => `
+        <tr>
+          <td><strong>${escapeHtml(u.nome)}</strong></td>
+          <td style="color:var(--text2)">${escapeHtml(u.email)}</td>
+          <td><span class="badge ${u.role === 'gestor' ? 'aprovado' : u.role === 'gerente' ? 'pendente' : ''}">${roleLabel[u.role] || u.role}</span></td>
+          <td><span class="colab-status-badge ${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'ativo' : 'inativo'}</span></td>
+          <td><button class="btn-ghost" style="padding:6px 14px;font-size:12px" data-action="editar-usuario" data-id="${u.id}">Editar</button></td>
+        </tr>`).join('');
+    }
+
 function renderCurrentPage() {
       switch (App.currentPage) {
         case 'dashboard': renderDashboard(); break;
@@ -514,6 +528,7 @@ function renderCurrentPage() {
         case 'log': renderLog(); break;
         case 'politica': renderPolitica(); break;
         case 'colaboradores': renderColaboradores(); break;
+        case 'usuarios': renderUsuarios(); break;
         default: renderDashboard(); break;
       }
     }
@@ -537,6 +552,7 @@ function renderAll() {
     renderFluxos,
     renderLog,
     renderColaboradores,
+    renderUsuarios,
     renderPolitica,
     hydrateRelatorioSelects,
     hydrateFluxoModal,

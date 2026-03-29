@@ -9,7 +9,6 @@ export function bindEvents({
   openSidebar,
   closeSidebar,
   closeModal,
-  openModal,
   persist,
   exportHistoricoCsv,
   renderAll,
@@ -39,7 +38,12 @@ export function bindEvents({
   verifyPolicy,
   updateFilePreview,
   getColab,
+  resetUsuarioForm,
+  preencherUsuarioForm,
+  handleSaveUsuario,
 }) {
+
+function bindEvents() {
       document.addEventListener('click', async (event) => {
         const actionEl = event.target.closest('[data-action]');
         if (!actionEl) return;
@@ -59,6 +63,9 @@ export function bindEvents({
           case 'criar-fluxo': handleCreateFluxo(); break;
           case 'salvar-colab': handleSaveColab(); break;
           case 'abrir-novo-colab': resetColabForm(); openModal('modal-colab'); break;
+          case 'abrir-novo-usuario': resetUsuarioForm(); openModal('modal-usuario'); break;
+          case 'salvar-usuario': handleSaveUsuario(); break;
+          case 'editar-usuario': preencherUsuarioForm(Number(actionEl.dataset.id)); openModal('modal-usuario'); break;
           case 'ver-colab': showColabDetail(Number(actionEl.dataset.id)); break;
           case 'editar-colab-detalhe': fillColabForm(getColab(Number(actionEl.dataset.id))); closeModal('modal-colab-detalhe'); openModal('modal-colab'); break;
           case 'toggle-colab-status': {
@@ -71,7 +78,7 @@ export function bindEvents({
           case 'salvar-politica': handleSavePolitica(); break;
           case 'toggle-politica': {
             const cat = actionEl.dataset.cat;
-            ui().politica[cat].ativo = !ui().politica[cat].ativo;
+            data().politica[cat].ativo = !data().politica[cat].ativo;
             persist();
             break;
           }
@@ -134,4 +141,7 @@ export function bindEvents({
       byId('prest-file-camera')?.addEventListener('change', (event) => updateFilePreview(event.target.files?.[0]));
       byId('prest-file-galeria')?.addEventListener('change', (event) => updateFilePreview(event.target.files?.[0]));
       byId('btn-editar-colab')?.setAttribute('data-action', 'editar-colab-detalhe');
+    }
+
+  return { bindEvents };
 }

@@ -333,14 +333,52 @@ export async function clearRascunho(userId) {
   if (error) throw error;
 }
 
+
+// ============================================================
+// USUÁRIOS DO SISTEMA (criação via Auth + insert em usuarios)
+// ============================================================
+
+export async function loadUsuarios() {
+  const client = ensureClient();
+  const { data, error } = await client
+    .from('usuarios')
+    .select('id, email, nome, role, ativo, created_at')
+    .eq('empresa_id', empresaId())
+    .order('nome');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function updateSupabaseUsuario(id, payload) {
+  const client = ensureClient();
+  const row = {};
+  if (payload.nome  !== undefined) row.nome  = payload.nome;
+  if (payload.role  !== undefined) row.role  = payload.role;
+  if (payload.ativo !== undefined) row.ativo = payload.ativo;
+  row.updated_at = new Date().toISOString();
+  const { data, error } = await client.from('usuarios').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+// Nota: createSupabaseUsuario cria o auth.user via Admin API — no plano free
+// o gestor deve criar o usuário no painel do Supabase (Authentication → Users)
+// e depois a função criar_gestor_inicial / insert manual em usuarios é usada.
+// Aqui simulamos inserindo direto na tabela (requer service_role no backend).
+export async function createSupabaseUsuario(payload) {
+  // No frontend com anon key não é possível criar auth.users diretamente.
+  // Orientamos o gestor a criar via painel e depois associar.
+  throw new Error('Para criar usuários, acesse o painel do Supabase em Authentication → Users, crie o usuário e depois execute: SELECT public.criar_gestor_inicial(\'UUID\', \'email\', \'Nome\', \'Empresa\');');
+}
+
 // ============================================================
 // CARREGAMENTO COMPLETO (substitui hydrateRemote)
 // ============================================================
 
 export async function loadFullState() {
-  const [colaboradores, departamentos, centrosCusto, politicas, fluxos, despesas, logAcoes] = await Promise.all([
+  const [colaboradores, departamentos, centrosCusto, politicas, fluxos, despesas, logAcoes, usuarios] = await Promise.all([
     loadColaboradores(), loadDepartamentos(), loadCentrosCusto(),
-    loadPoliticas(), loadFluxos(), loadDespesas(), loadLogAcoes(),
+    loadPoliticas(), loadFluxos(), loadDespesas(), loadLogAcoes(), loadUsuarios(),
   ]);
   const politicaPadrao = politicas.find(p => p.nome === 'Padrao') || politicas[0];
   return {
@@ -354,6 +392,7 @@ export async function loadFullState() {
       _departamentos:  departamentos,
       _centrosCusto:   centrosCusto,
       _politicas:      politicas,
+      _usuarios:       usuarios,
     },
   };
 }

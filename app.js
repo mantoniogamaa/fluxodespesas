@@ -130,6 +130,7 @@ export async function initApp() {
     resetColabForm: renderers.resetColabForm,
     fillColabForm: renderers.fillColabForm,
     showColabDetail: renderers.showColabDetail,
+    renderUsuarios: renderers.renderUsuarios,
     setRole: uiApi.setRole,
     handleLogin: actions.handleLogin,
     handleLogout: actions.handleLogout,
@@ -146,6 +147,9 @@ export async function initApp() {
     verifyPolicy: actions.verifyPolicy,
     updateFilePreview: uiApi.updateFilePreview,
     getColab: context.getColab,
+    handleSaveUsuario: actions.handleSaveUsuario,
+    resetUsuarioForm: actions.resetUsuarioForm,
+    preencherUsuarioForm: actions.preencherUsuarioForm,
   });
 
   const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();

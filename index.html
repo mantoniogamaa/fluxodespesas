@@ -104,6 +104,7 @@
       <div class="nav-item" data-action="go-page" data-page="log" data-nav-id="nav-log" id="nav-log" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Log de Ações</div>
       <div class="nav-item" data-action="go-page" data-page="politica" data-nav-id="nav-politica" id="nav-politica" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Políticas</div>
       <div class="nav-item" data-action="go-page" data-page="colaboradores" data-nav-id="nav-colaboradores" id="nav-colaboradores" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Colaboradores</div>
+      <div class="nav-item" data-action="go-page" data-page="usuarios" data-nav-id="nav-usuarios" id="nav-usuarios" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="19" cy="8" r="2.5" fill="currentColor" stroke="none"/><path d="M19 6v4M17 8h4" stroke="currentColor" stroke-width="1.5"/></svg></span> Usuários</div>
     </nav>
     <!-- saldo em tempo real para colaborador -->
     <div class="sidebar-saldo" id="sidebar-saldo" style="display:none">
@@ -151,7 +152,7 @@
           </div>
           <div class="card">
             <div class="section-title" style="margin-bottom:16px">Gastos por Categoria</div>
-            <canvas id="chart-cat" style="width:100%;display:block"></canvas>
+            <canvas id="chart-cat" height="220" style="width:100%;display:block"></canvas>
           </div>
         </div>
       </div>
@@ -400,6 +401,81 @@
 </div>
 
 <!-- MODAL cadastro/editar colaborador -->
+<!-- PÁGINA USUÁRIOS -->
+<div class="page" id="page-usuarios">
+  <div class="card">
+    <div class="table-header">
+      <div class="section-title">Usuários do Sistema</div>
+      <button class="btn-primary" style="width:auto;padding:11px 22px;font-size:13px" data-action="abrir-novo-usuario">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Novo Usuário
+      </button>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody id="usuarios-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL novo/editar usuário -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-usuario-title">Novo Usuário</div>
+    <div class="modal-sub">Crie um acesso ao sistema para gestor ou gerente</div>
+    <input type="hidden" id="usuario-edit-id" value="">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Nome completo *</div>
+        <input class="field-input" id="usuario-nome" type="text" placeholder="Ex: João Silva">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Perfil de acesso *</div>
+        <div class="select-wrapper">
+          <select class="field-input" id="usuario-role">
+            <option value="gestor">Gestor — acesso total</option>
+            <option value="gerente">Gerente — aprova seu departamento</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">E-mail *</div>
+      <input class="field-input" id="usuario-email" type="email" inputmode="email" placeholder="email@empresa.com">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Senha *</div>
+        <input class="field-input" id="usuario-senha" type="password" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Status</div>
+        <div class="select-wrapper">
+          <select class="field-input" id="usuario-status">
+            <option value="true">Ativo</option>
+            <option value="false">Inativo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text3);margin-top:4px">
+      <strong style="color:var(--text2)">Atenção:</strong> O usuário receberá acesso pelo e-mail e senha cadastrados. O perfil define o que ele pode ver e fazer no sistema.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" data-action="close-modal" data-modal-id="modal-usuario">Cancelar</button>
+      <button class="btn-confirm" data-action="salvar-usuario">Salvar Usuário</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-colab">
   <div class="modal">
     <div class="modal-handle"></div>

@@ -249,8 +249,61 @@ function verifyPolicy() {
       body.textContent = `Limite permitido: ${currency(check.limite)}${check.subLabel ? ` (${check.subLabel})` : ''}. Excesso atual: ${currency(check.excesso)}.`;
     }
 
+
+async function handleSaveUsuario() {
+      const id = byId('usuario-edit-id')?.value || '';
+      const nome = (byId('usuario-nome')?.value || '').trim();
+      const email = (byId('usuario-email')?.value || '').trim();
+      const role = byId('usuario-role')?.value || 'gerente';
+      const senha = byId('usuario-senha')?.value || '';
+      const ativo = byId('usuario-status')?.value !== 'false';
+
+      if (!nome) return showToast('Informe o nome', 'error');
+      if (!email || !email.includes('@')) return showToast('Informe um e-mail válido', 'error');
+      if (!id && !senha) return showToast('Defina uma senha', 'error');
+      if (senha && senha.length < 6) return showToast('Senha deve ter mínimo 6 caracteres', 'error');
+
+      try {
+        const { createSupabaseUsuario, updateSupabaseUsuario } = await import('./supabase-service.js');
+        if (id) {
+          await updateSupabaseUsuario(id, { nome, role, ativo });
+        } else {
+          await createSupabaseUsuario({ email, senha, nome, role });
+        }
+        closeModal('modal-usuario');
+        resetUsuarioForm();
+        showToast(id ? 'Usuário atualizado!' : 'Usuário criado!', 'success');
+      } catch (err) {
+        showToast(err.message || 'Erro ao salvar usuário', 'error');
+      }
+    }
+
+function resetUsuarioForm() {
+      byId('modal-usuario-title').textContent = 'Novo Usuário';
+      byId('usuario-edit-id').value = '';
+      ['usuario-nome','usuario-email','usuario-senha'].forEach(id => { if(byId(id)) byId(id).value = ''; });
+      if(byId('usuario-role')) byId('usuario-role').value = 'gerente';
+      if(byId('usuario-status')) byId('usuario-status').value = 'true';
+    }
+
+function preencherUsuarioForm(id) {
+      const usuarios = FluxoState.get()?.data?._usuarios || [];
+      const u = usuarios.find(x => x.id === id);
+      if (!u) return;
+      byId('modal-usuario-title').textContent = 'Editar Usuário';
+      byId('usuario-edit-id').value = u.id;
+      byId('usuario-nome').value = u.nome || '';
+      byId('usuario-email').value = u.email || '';
+      byId('usuario-senha').value = '';
+      if(byId('usuario-role')) byId('usuario-role').value = u.role || 'gerente';
+      if(byId('usuario-status')) byId('usuario-status').value = String(u.ativo !== false);
+    }
+
   return {
     handleLogin,
+    handleSaveUsuario,
+    resetUsuarioForm,
+    preencherUsuarioForm,
     handleLogout,
     handleAddPrestItem,
     handleConfirmPrestacao,
