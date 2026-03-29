@@ -54,12 +54,17 @@
     <div class="field-group"><div class="field-label">E-mail</div><input class="field-input" type="email" id="auth-email" value="" inputmode="email" autocomplete="email" placeholder="seu email"></div>
     <div class="field-group"><div class="field-label">Senha</div><input class="field-input" type="password" id="auth-pass" value="123456"></div>
     <button class="btn-primary" data-action="login">Entrar →</button>
-    <div class="auth-hint" id="auth-hint-text">Modo local: demo.gestor@empresa / 12345 · demo.colaborador@empresa / 12345 · Modo Supabase: use seu e-mail e senha cadastrados no Auth</div>
+    <button class="btn-demo" id="btn-demo-toggle" onclick="window.toggleDemoMode()"></button>
+    <div class="auth-hint" id="auth-hint-text">Modo Supabase: use seu e-mail e senha cadastrados no Auth</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
+  <div id="demo-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:#854d0e;color:#fef08a;font-size:13px;font-weight:500;position:sticky;top:0;z-index:999;">
+    <span>⚠ Modo demonstração ativo — dados fictícios para teste</span>
+    <button onclick="window.toggleDemoMode()" style="background:#713f12;border:none;color:#fef08a;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Desativar demo</button>
+  </div>
   <div class="sidebar-overlay" id="sidebar-overlay" data-action="close-sidebar"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
@@ -488,6 +493,39 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script type="module" src="./main.js"></script>
+
+
+<script>
+(function() {
+  const DEMO_KEY = 'fluxo_demo_mode';
+  const isDemo = localStorage.getItem(DEMO_KEY) === 'true';
+
+  window.isDemoMode = function() { return localStorage.getItem(DEMO_KEY) === 'true'; };
+
+  window.toggleDemoMode = function() {
+    const current = localStorage.getItem(DEMO_KEY) === 'true';
+    if (current) {
+      localStorage.removeItem(DEMO_KEY);
+      localStorage.removeItem('fluxo_state');
+      localStorage.removeItem('fluxo_draft');
+    } else {
+      localStorage.setItem(DEMO_KEY, 'true');
+    }
+    location.reload();
+  };
+
+  function updateDemoUI() {
+    const demo = localStorage.getItem(DEMO_KEY) === 'true';
+    const banner = document.getElementById('demo-banner');
+    const btn = document.getElementById('btn-demo-toggle');
+    if (banner) banner.style.display = demo ? 'flex' : 'none';
+    if (btn) btn.textContent = demo ? '✕ Desativar demonstração' : '▶ Ver demonstração';
+    if (btn) btn.classList.toggle('btn-demo-active', demo);
+  }
+
+  document.addEventListener('DOMContentLoaded', updateDemoUI);
+})();
+</script>
 
 </body>
 </html>

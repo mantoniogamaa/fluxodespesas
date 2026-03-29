@@ -115,7 +115,6 @@ export async function initApp() {
     openSidebar: uiApi.openSidebar,
     closeSidebar: uiApi.closeSidebar,
     closeModal: uiApi.closeModal,
-    openModal: uiApi.openModal,
     persist: uiApi.persist,
     exportHistoricoCsv: uiApi.exportHistoricoCsv,
     renderAll: renderers.renderAll,
@@ -147,13 +146,13 @@ export async function initApp() {
     getColab: context.getColab,
   });
 
-  // Modo Supabase: começa sem dados demo. Modo local: carrega seed.
-  if (isSupabaseEnabled()) {
-    FluxoState.bootstrap(null);
-  } else {
+  // Demo mode (botão na tela de login) carrega seed; Supabase sem demo começa limpo
+  const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();
+  if (demoMode || !isSupabaseEnabled()) {
     uiApi.ensureSeed();
+  } else {
+    FluxoState.bootstrap(null);
   }
-
   uiApi.setRole(context.auth().currentRole || 'gestor');
 
   if (isSupabaseEnabled()) {
@@ -174,13 +173,11 @@ export async function initApp() {
       console.error('Supabase session bootstrap error', error);
     }
   }
-
   context.App.unsub = FluxoState.subscribe((snapshot) => {
     const user = snapshot?.auth?.currentUser;
     cloudContext.userId = user?.userId || null;
     cloudContext.workspaceId = user?.workspaceId || cloudContext.workspaceId || null;
   });
-
   renderers.renderAll();
   window.FluxoApp = Object.freeze({
     renderAll: renderers.renderAll,

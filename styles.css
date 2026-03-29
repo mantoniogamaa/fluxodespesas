@@ -132,6 +132,10 @@ body{
 .btn-primary:hover{box-shadow:0 6px 28px rgba(59,130,246,.45),0 1px 0 rgba(255,255,255,.15) inset;transform:translateY(-1px);}
 .btn-primary:active{transform:scale(.98);opacity:.9;}
 .auth-hint{text-align:center;font-size:11px;color:var(--text3);margin-top:14px;}
+.btn-demo{width:100%;margin-top:10px;padding:11px 20px;border-radius:10px;border:1.5px dashed var(--border);background:transparent;color:var(--text3);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:.01em;}
+.btn-demo:hover{border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,.06);}
+.btn-demo.btn-demo-active{border-color:#ca8a04;color:#ca8a04;background:rgba(202,138,4,.08);}
+.btn-demo.btn-demo-active:hover{background:rgba(202,138,4,.14);}
 
 /* ── SIDEBAR ── */
 #app{display:none;min-height:100vh;}
