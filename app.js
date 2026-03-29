@@ -12,7 +12,7 @@ import { bindEvents } from './events.js';
 import FluxoRepository from './repository.js';
 import { isSupabaseEnabled } from './supabase-client.js';
 import { createSupabaseCloudAdapter } from './supabase-cloud-adapter.js';
-import { getSessionUser, getProfile, mapCloudIdentity } from './supabase-service.js';
+import { getSessionUser, getProfile, mapCloudIdentity, loadFullState, loadRascunho } from './supabase-service.js';
 
 export async function initApp() {
   const context = createAppContext({ FluxoState, FluxoBusiness, sum });
@@ -116,6 +116,7 @@ export async function initApp() {
     openSidebar: uiApi.openSidebar,
     closeSidebar: uiApi.closeSidebar,
     closeModal: uiApi.closeModal,
+    openModal: uiApi.openModal,
     persist: uiApi.persist,
     exportHistoricoCsv: uiApi.exportHistoricoCsv,
     renderAll: renderers.renderAll,
@@ -147,7 +148,6 @@ export async function initApp() {
     getColab: context.getColab,
   });
 
-  // Demo mode carrega seed; Supabase sem demo começa limpo
   const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();
   if (demoMode || !isSupabaseEnabled()) {
     uiApi.ensureSeed();
@@ -165,9 +165,11 @@ export async function initApp() {
         cloudContext.userId = mapped.userId;
         cloudContext.workspaceId = mapped.workspaceId;
         FluxoState.setAuth({ currentRole: mapped.role, currentUser: mapped });
-        const remoteState = await FluxoRepository.hydrateRemote();
+        // Carrega estado completo das tabelas relacionais
+        const remoteState = await loadFullState();
         if (remoteState) FluxoState.hydrateRemote(remoteState);
-        const remoteDraft = await FluxoRepository.hydrateRemoteDraft();
+        // Carrega rascunho do usuário
+        const remoteDraft = await loadRascunho(sessionUser.id);
         if (Array.isArray(remoteDraft) && remoteDraft.length) FluxoState.setRemoteDraft(remoteDraft);
       }
     } catch (error) {
