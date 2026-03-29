@@ -102,6 +102,7 @@ export async function initApp() {
     renderAvatarPicker: renderers.renderAvatarPicker,
     resetColabForm: renderers.resetColabForm,
     fillColabForm: renderers.fillColabForm,
+    closeSidebar: uiApi.closeSidebar,
   });
 
   bindEvents({
@@ -146,7 +147,7 @@ export async function initApp() {
     getColab: context.getColab,
   });
 
-  // Demo mode (botão na tela de login) carrega seed; Supabase sem demo começa limpo
+  // Demo mode carrega seed; Supabase sem demo começa limpo
   const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();
   if (demoMode || !isSupabaseEnabled()) {
     uiApi.ensureSeed();

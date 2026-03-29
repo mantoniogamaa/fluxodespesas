@@ -446,7 +446,8 @@ function renderAvatarPicker() {
 function resetColabForm() {
       byId('modal-colab-title').textContent = 'Cadastrar Colaborador';
       byId('colab-edit-id').value = '';
-      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-senha'].forEach((id) => byId(id).value = '');
+      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-pix','colab-senha'].forEach((id) => { if(byId(id)) byId(id).value = ''; });
+      if(byId('colab-politica')) byId('colab-politica').value = '';
       byId('colab-status').value = 'ativo';
       App.selectedAvatarColor = COLORS[0];
       renderAvatarPicker();
@@ -462,6 +463,8 @@ function fillColabForm(colab) {
       byId('colab-cpf').value = colab.cpf || '';
       byId('colab-cargo').value = colab.cargo || '';
       byId('colab-cc').value = colab.cc || '';
+      if(byId('colab-pix')) byId('colab-pix').value = colab.pix || '';
+      if(byId('colab-politica')) byId('colab-politica').value = colab.politicaId || '';
       byId('colab-senha').value = '';
       byId('colab-status').value = colab.status || 'ativo';
       App.selectedAvatarColor = colab.color || COLORS[0];
@@ -477,6 +480,8 @@ function showColabDetail(id) {
         <div class="colab-detail-row"><div class="colab-detail-label">Telefone</div><div class="colab-detail-val">${escapeHtml(colab.telefone || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">CPF</div><div class="colab-detail-val">${escapeHtml(colab.cpf || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">Centro</div><div class="colab-detail-val">${escapeHtml(colab.cc || '—')}</div></div>
+        <div class="colab-detail-row"><div class="colab-detail-label">Chave Pix</div><div class="colab-detail-val">${escapeHtml(colab.pix || '—')}</div></div>
+        <div class="colab-detail-row"><div class="colab-detail-label">Política</div><div class="colab-detail-val">${escapeHtml(colab.politicaId || 'Padrão da empresa')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">Status</div><div class="colab-detail-val"><span class="colab-status-badge ${colab.status}">${escapeHtml(colab.status)}</span></div></div>`;
       byId('btn-editar-colab').dataset.id = String(colab.id);
       openModal('modal-colab-detalhe');

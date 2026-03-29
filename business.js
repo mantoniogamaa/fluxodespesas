@@ -175,6 +175,12 @@ const AuthService = {
       if (!editId && !senha) return { ok: false, message: 'Defina uma senha de acesso' };
       if (senha && senha.length < 6) return { ok: false, message: 'Senha deve ter no mínimo 6 caracteres' };
 
+      const cc = (payload.cc || '').trim();
+      const pix = (payload.pix || '').trim();
+      const politicaId = (payload.politicaId || '').trim();
+
+      if (!cc) return { ok: false, message: 'Informe o centro de custo' };
+
       const baseData = {
         nome,
         dept,
@@ -182,7 +188,9 @@ const AuthService = {
         telefone: payload.telefone || '',
         cpf: payload.cpf || '',
         cargo: payload.cargo || '',
-        cc: payload.cc || '',
+        cc,
+        pix,
+        politicaId,
         status: payload.status || 'ativo',
         color: payload.color,
         initials: initials(nome),

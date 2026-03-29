@@ -446,8 +446,26 @@
         <input class="field-input" id="colab-cargo" type="text" placeholder="Ex: Analista Comercial">
       </div>
       <div class="field-group">
-        <div class="field-label">Centro de Custo</div>
+        <div class="field-label">Centro de Custo *</div>
         <input class="field-input" id="colab-cc" type="text" placeholder="Ex: CC-001">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Chave Pix</div>
+        <input class="field-input" id="colab-pix" type="text" placeholder="CPF, e-mail ou telefone">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Política de despesas</div>
+        <div class="select-wrapper">
+          <select class="field-input" id="colab-politica">
+            <option value="">Padrão da empresa</option>
+            <option value="executivo">Executivo</option>
+            <option value="gerente">Gerente</option>
+            <option value="operacional">Operacional</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -465,6 +483,10 @@
           </select>
         </div>
       </div>
+    </div>
+
+    <div style="background:var(--bg2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text3);margin-top:4px">
+      <strong style="color:var(--text2)">Campos obrigatórios:</strong> Nome, Departamento, E-mail, Centro de Custo e Senha (no cadastro).
     </div>
 
     <div class="modal-actions">

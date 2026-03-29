@@ -28,6 +28,7 @@ export function createActions({
   renderAvatarPicker,
   resetColabForm,
   fillColabForm,
+  closeSidebar,
 }) {
 
 async function handleLogin() {
@@ -143,6 +144,8 @@ function handleSaveColab() {
         cpf: byId('colab-cpf')?.value || '',
         cargo: byId('colab-cargo')?.value || '',
         cc: byId('colab-cc')?.value || '',
+        pix: byId('colab-pix')?.value || '',
+        politicaId: byId('colab-politica')?.value || '',
         senha: byId('colab-senha')?.value || '',
         status: byId('colab-status')?.value || 'ativo',
         color: App.selectedAvatarColor,
