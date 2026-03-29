@@ -1,11 +1,3 @@
-// storage.js — ativa o adapter Supabase no FluxoRepository
-import { createSupabaseAdapter } from './supabase-adapter.js';
-import FluxoRepository from './repository.js';
-
-const FluxoStorage = createSupabaseAdapter();
-
-// Registra o adapter Supabase como ativo no repository
-FluxoRepository.use(FluxoStorage);
-
-export { createSupabaseAdapter };
-export default FluxoStorage;
+// storage.js — exporta apenas a factory do adapter Supabase
+// O registro no FluxoRepository é feito em main.js
+export { createSupabaseAdapter } from './supabase-adapter.js';
