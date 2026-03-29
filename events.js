@@ -41,14 +41,14 @@ export function bindEvents({
 }) {
 
 function bindEvents() {
-      document.addEventListener('click', (event) => {
+      document.addEventListener('click', async (event) => {
         const actionEl = event.target.closest('[data-action]');
         if (!actionEl) return;
         const action = actionEl.dataset.action;
         switch (action) {
           case 'set-role': setRole(actionEl.dataset.role); break;
-          case 'login': handleLogin(); break;
-          case 'logout': handleLogout(); break;
+          case 'login': await handleLogin(); break;
+          case 'logout': await handleLogout(); break;
           case 'open-sidebar': openSidebar(); break;
           case 'close-sidebar': closeSidebar(); break;
           case 'go-page': App.currentPage = actionEl.dataset.page; closeSidebar(); renderAll(); break;

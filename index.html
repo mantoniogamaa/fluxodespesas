@@ -54,7 +54,7 @@
     <div class="field-group"><div class="field-label">E-mail</div><input class="field-input" type="email" id="auth-email" value="" inputmode="email" autocomplete="email" placeholder="seu email"></div>
     <div class="field-group"><div class="field-label">Senha</div><input class="field-input" type="password" id="auth-pass" value="123456"></div>
     <button class="btn-primary" data-action="login">Entrar →</button>
-    <div class="auth-hint" id="auth-hint-text">Gestor: demo.gestor@empresa / 12345 · Colaborador: demo.colaborador@empresa / 12345</div>
+    <div class="auth-hint" id="auth-hint-text">Modo local: demo.gestor@empresa / 12345 · demo.colaborador@empresa / 12345 · Modo Supabase: use seu e-mail e senha cadastrados no Auth</div>
   </div>
 </div>
 
@@ -483,6 +483,11 @@
 
 <div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-text" id="loading-text">Processando...</div></div>
 <div class="toast" id="toast"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
 <script type="module" src="./main.js"></script>
+
 </body>
 </html>

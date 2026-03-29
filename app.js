@@ -9,10 +9,15 @@ import { createUi } from './ui.js';
 import { createRenderers } from './renderers.js';
 import { createActions } from './actions.js';
 import { bindEvents } from './events.js';
+import FluxoRepository from './repository.js';
+import { isSupabaseEnabled } from './supabase-client.js';
+import { createSupabaseCloudAdapter } from './supabase-cloud-adapter.js';
+import { getSessionUser, getProfile, mapCloudIdentity } from './supabase-service.js';
 
 export async function initApp() {
   const context = createAppContext({ FluxoState, FluxoBusiness, sum });
   context.App.selectedAvatarColor = COLORS[0];
+  const cloudContext = { userId: null, workspaceId: null };
 
   const renderRuntime = { renderAll: null };
 
@@ -61,6 +66,12 @@ export async function initApp() {
   });
 
   renderRuntime.renderAll = renderers.renderAll;
+
+  if (isSupabaseEnabled()) {
+    FluxoRepository.attachCloud(createSupabaseCloudAdapter(() => cloudContext));
+  } else {
+    FluxoRepository.detachCloud();
+  }
 
   const actions = createActions({
     FluxoState,
@@ -135,11 +146,31 @@ export async function initApp() {
     getColab: context.getColab,
   });
 
-  // Aguarda o bootstrap assíncrono (Supabase) ANTES de renderizar
-  await uiApi.ensureSeed();
+  uiApi.ensureSeed();
   uiApi.setRole(context.auth().currentRole || 'gestor');
-  context.App.unsub = FluxoState.subscribe(() => {
-    // reservado para reatividade futura
+
+  if (isSupabaseEnabled()) {
+    try {
+      const sessionUser = await getSessionUser();
+      if (sessionUser) {
+        const profile = await getProfile(sessionUser.id);
+        const mapped = mapCloudIdentity(profile, sessionUser);
+        cloudContext.userId = mapped.userId;
+        cloudContext.workspaceId = mapped.workspaceId;
+        FluxoState.setAuth({ currentRole: mapped.role, currentUser: mapped });
+        const remoteState = await FluxoRepository.hydrateRemote();
+        if (remoteState) FluxoState.hydrateRemote(remoteState);
+        const remoteDraft = await FluxoRepository.hydrateRemoteDraft();
+        if (Array.isArray(remoteDraft) && remoteDraft.length) FluxoState.setRemoteDraft(remoteDraft);
+      }
+    } catch (error) {
+      console.error('Supabase session bootstrap error', error);
+    }
+  }
+  context.App.unsub = FluxoState.subscribe((snapshot) => {
+    const user = snapshot?.auth?.currentUser;
+    cloudContext.userId = user?.userId || null;
+    cloudContext.workspaceId = user?.workspaceId || cloudContext.workspaceId || null;
   });
   renderers.renderAll();
   window.FluxoApp = Object.freeze({

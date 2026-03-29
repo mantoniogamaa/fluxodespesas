@@ -26,6 +26,7 @@ export const FluxoState = (() => {
     meta: {
       schemaVersion: 2,
       hydratedAt: null,
+      lastCloudSyncAt: null,
     },
   };
 
@@ -57,27 +58,34 @@ export const FluxoState = (() => {
     return target;
   }
 
-  async function bootstrap(seed) {
+  function bootstrap(seed) {
     const base = clone(seed || {});
     mergeState(state, base);
 
     if (FluxoRepository) {
-      const persisted = await Promise.resolve(FluxoRepository.loadState());
-      if (persisted) {
-        // Restaura apenas os dados — nunca restaura auth (sessão é sempre local)
-        if (persisted.data) mergeState(state.data, persisted.data);
-        if (persisted.ui) mergeState(state.ui, persisted.ui);
-        if (persisted.meta) mergeState(state.meta, persisted.meta);
-      }
-      const draft = await Promise.resolve(FluxoRepository.loadDraft());
-      state.ui.rascunhoOffline = Array.isArray(draft) ? draft : [];
+      const persisted = FluxoRepository.loadState();
+      if (persisted) mergeState(state, persisted);
+      state.ui.rascunhoOffline = FluxoRepository.loadDraft();
     }
 
-    // Auth sempre começa limpo — usuário deve logar toda sessão
-    state.auth = { currentRole: 'gestor', currentUser: null };
     state.meta.hydratedAt = new Date().toISOString();
     notify();
     return get();
+  }
+
+  function hydrateRemote(remoteSnapshot) {
+    if (!remoteSnapshot) return get();
+    mergeState(state, remoteSnapshot);
+    state.meta.lastCloudSyncAt = new Date().toISOString();
+    notify();
+    return get();
+  }
+
+  function setRemoteDraft(items) {
+    state.ui.rascunhoOffline = Array.isArray(items) ? clone(items) : [];
+    state.meta.lastCloudSyncAt = new Date().toISOString();
+    notify();
+    return state.ui.rascunhoOffline;
   }
 
   function get() {
@@ -102,15 +110,15 @@ export const FluxoState = (() => {
     notify();
   }
 
-  async function save() {
+  function save() {
     if (FluxoRepository) {
-      // Salva apenas data, ui e meta — nunca auth
-      await Promise.resolve(FluxoRepository.saveState({
+      FluxoRepository.saveState({
+        auth: state.auth,
         data: state.data,
         ui: { ...state.ui, rascunhoOffline: [] },
         meta: state.meta,
-      }));
-      await Promise.resolve(FluxoRepository.saveDraft(state.ui.rascunhoOffline || []));
+      });
+      FluxoRepository.saveDraft(state.ui.rascunhoOffline || []);
     }
     notify();
   }
@@ -130,6 +138,8 @@ export const FluxoState = (() => {
 
   return {
     bootstrap,
+    hydrateRemote,
+    setRemoteDraft,
     get,
     setAuth,
     setUi,

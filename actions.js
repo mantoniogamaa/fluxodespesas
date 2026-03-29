@@ -1,3 +1,4 @@
+import FluxoRepository from './repository.js';
 export function createActions({
   FluxoState,
   FluxoBusiness,
@@ -29,8 +30,8 @@ export function createActions({
   fillColabForm,
 }) {
 
-function handleLogin() {
-      const result = FluxoBusiness.AuthService.login({
+async function handleLogin() {
+      const result = await FluxoBusiness.AuthService.login({
         email: byId('auth-email')?.value || '',
         senha: byId('auth-pass')?.value || '',
         currentRole: auth().currentRole,
@@ -39,13 +40,24 @@ function handleLogin() {
         showToast(result.message, 'error');
         return;
       }
+      if (result.cloud) {
+        try {
+          const remoteState = await FluxoRepository.hydrateRemote();
+          if (remoteState) FluxoState.hydrateRemote(remoteState);
+          const remoteDraft = await FluxoRepository.hydrateRemoteDraft();
+          if (remoteDraft?.length) FluxoState.setRemoteDraft(remoteDraft);
+        } catch (error) {
+          console.error('Cloud hydrate error', error);
+          showToast('Login ok, mas a carga do Supabase falhou', 'warning');
+        }
+      }
       showToast(`Bem-vindo, ${result.user.name}!`, 'success');
       App.currentPage = 'dashboard';
       renderAll();
     }
 
-function handleLogout() {
-      FluxoBusiness.AuthService.logout();
+async function handleLogout() {
+      await FluxoBusiness.AuthService.logout();
       closeSidebar();
       renderAll();
     }

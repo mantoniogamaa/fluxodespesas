@@ -7,7 +7,7 @@ installBrowserMocks();
 import FluxoState from './state.js';
 import FluxoBusiness from './business.js';
 import FluxoRepository from './repository.js';
-import { createMemoryAdapter } from './adapters/memory-adapter.js';
+import { createMemoryAdapter } from './memory-adapter.js';
 import { SEED_STATE } from './seed.js';
 import { DEFAULT_POLICY } from './constants.js';
 
@@ -66,11 +66,11 @@ test('ColaboradorService.save blocks duplicate emails and allows valid creation'
   assert.equal(FluxoState.get().data.colaboradores.length, 4);
 });
 
-test('AuthService.login blocks inactive collaborator', () => {
+test('AuthService.login blocks inactive collaborator', async () => {
   resetApp();
   FluxoBusiness.ColaboradorService.toggleStatus(2, 'Gestor Teste');
 
-  const result = FluxoBusiness.AuthService.login({
+  const result = await FluxoBusiness.AuthService.login({
     email: 'bruno.ramos@empresa.com',
     senha: '123456',
     currentRole: 'colaborador'
@@ -157,7 +157,7 @@ test('Repository adapter can be swapped without changing business rules', () => 
   resetApp();
   const adapterInfo = FluxoRepository.inspect();
 
-  assert.equal(adapterInfo.kind, 'memory');
+  assert.equal(adapterInfo.local.kind, 'memory');
   FluxoBusiness.PrestacaoService.saveDraft([{ estab: 'Teste', valor: 10, cat: 'outros' }]);
   assert.deepEqual(FluxoRepository.loadDraft(), [{ estab: 'Teste', valor: 10, cat: 'outros' }]);
 });

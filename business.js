@@ -1,5 +1,7 @@
 import FluxoState from './state.js';
 import FluxoRepository from './repository.js';
+import { isSupabaseEnabled } from './supabase-client.js';
+import { signInWithPassword, signOutCloud, getProfile, mapCloudIdentity, getSessionUser } from './supabase-service.js';
 
 export const FluxoBusiness = (() => {
   const clone = (value) => {
@@ -21,20 +23,36 @@ export const FluxoBusiness = (() => {
     FluxoState.save();
   }
 
-  const AuthService = {
+  
+const AuthService = {
     setRole(role) {
       FluxoState.setAuth({ currentRole: role });
       FluxoState.save();
       return role;
     },
 
-    login({ email, senha, currentRole }) {
+    async login({ email, senha, currentRole }) {
       const appState = state();
       const normalizedEmail = (email || '').trim().toLowerCase();
       const password = senha || '';
 
       if (!normalizedEmail || !password) {
         return { ok: false, message: 'Preencha e-mail e senha' };
+      }
+
+      if (isSupabaseEnabled()) {
+        try {
+          await signInWithPassword(normalizedEmail, password);
+          const user = await getSessionUser();
+          if (!user) return { ok: false, message: 'Sessão Supabase não encontrada' };
+          const profile = await getProfile(user.id);
+          const mapped = mapCloudIdentity(profile, user);
+          FluxoState.setAuth({ currentRole: mapped.role, currentUser: mapped });
+          FluxoState.save();
+          return { ok: true, user: mapped, cloud: true };
+        } catch (error) {
+          return { ok: false, message: error?.message || 'Falha ao autenticar no Supabase' };
+        }
       }
 
       const demoGestor = 'demo.gestor@empresa';
@@ -83,13 +101,21 @@ export const FluxoBusiness = (() => {
       return { ok: true, user };
     },
 
-    logout() {
+    async logout() {
+      if (isSupabaseEnabled()) {
+        try {
+          await signOutCloud();
+        } catch (error) {
+          console.error('Supabase signOut error', error);
+        }
+      }
       FluxoState.setAuth({ currentUser: null, currentRole: 'gestor' });
       FluxoState.save();
     },
   };
 
   const PolicyService = {
+
     checkLimit(policy, cat, valor, horario) {
       const policyConfig = policy?.[cat];
       if (!policyConfig || !policyConfig.ativo) return null;

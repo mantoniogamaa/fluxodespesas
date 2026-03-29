@@ -1,12 +1,8 @@
-import { createSupabaseAdapter } from './supabase-adapter.js';
+import FluxoStorage from './storage.js';
 import FluxoRepository from './repository.js';
 import FluxoState from './state.js';
 import FluxoBusiness from './business.js';
 import { initApp } from './app.js';
-
-// 1. Cria e registra o adapter Supabase ANTES de qualquer outro módulo usar o repository
-const FluxoStorage = createSupabaseAdapter();
-FluxoRepository.use(FluxoStorage);
 
 window.FluxoCore = Object.freeze({
   storage: FluxoStorage,
@@ -15,6 +11,6 @@ window.FluxoCore = Object.freeze({
   business: FluxoBusiness,
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  initApp();
+window.addEventListener('DOMContentLoaded', async () => {
+  await initApp();
 });
