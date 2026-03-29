@@ -1,44 +1,51 @@
 import {
-  loadWorkspaceState,
-  saveWorkspaceState,
-  loadWorkspaceDraft,
-  saveWorkspaceDraft,
-  clearWorkspaceDraft,
+  loadFullState,
+  saveRascunho,
+  loadRascunho,
+  clearRascunho,
 } from './supabase-service.js';
 
 export function createSupabaseCloudAdapter(getCloudContext) {
   return {
     kind: 'supabase-cloud',
+
     async loadState() {
       const ctx = getCloudContext?.();
-      if (!ctx?.workspaceId) return null;
-      return await loadWorkspaceState(ctx.workspaceId);
+      if (!ctx?.userId) return null;
+      return await loadFullState();
     },
-    async saveState(payload) {
-      const ctx = getCloudContext?.();
-      if (!ctx?.workspaceId || !ctx?.userId) return payload;
-      return await saveWorkspaceState({ workspaceId: ctx.workspaceId, payload, ownerUserId: ctx.userId });
+
+    async saveState(_payload) {
+      // No novo modelo relacional, cada entidade é salva individualmente
+      // via saveColaborador, saveFluxo, etc. — não há mais saveState em bloco.
+      return _payload;
     },
+
     async loadDraft() {
       const ctx = getCloudContext?.();
-      if (!ctx?.workspaceId || !ctx?.userId) return [];
-      return await loadWorkspaceDraft({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+      if (!ctx?.userId) return [];
+      return await loadRascunho(ctx.userId);
     },
+
     async saveDraft(items) {
       const ctx = getCloudContext?.();
-      if (!ctx?.workspaceId || !ctx?.userId) return items;
-      return await saveWorkspaceDraft({ workspaceId: ctx.workspaceId, userId: ctx.userId, items });
+      if (!ctx?.userId) return items;
+      await saveRascunho(ctx.userId, items);
+      return items;
     },
+
     async clearDraft() {
       const ctx = getCloudContext?.();
-      if (!ctx?.workspaceId || !ctx?.userId) return;
-      return await clearWorkspaceDraft({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+      if (!ctx?.userId) return;
+      await clearRascunho(ctx.userId);
     },
+
     async clearAll() {
       const ctx = getCloudContext?.();
-      if (!ctx?.workspaceId || !ctx?.userId) return;
-      await clearWorkspaceDraft({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+      if (!ctx?.userId) return;
+      await clearRascunho(ctx.userId);
     },
+
     inspect() {
       const ctx = getCloudContext?.() || {};
       return { kind: 'supabase-cloud', workspaceId: ctx.workspaceId || null, userId: ctx.userId || null };
