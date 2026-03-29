@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+  <title>Fluxo — Despesas em Movimento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<!-- inputs de arquivo (fora de qualquer container) -->
+<input type="file" id="file-camera" accept="image/*" capture="environment" style="position:fixed;top:-9999px;left:-9999px;opacity:0;width:1px;height:1px;">
+<input type="file" id="file-galeria" accept="image/*,application/pdf" style="position:fixed;top:-9999px;left:-9999px;opacity:0;width:1px;height:1px;">
+<input type="file" id="prest-file-camera" accept="image/*" capture="environment" style="position:fixed;top:-9999px;left:-9999px;opacity:0;width:1px;height:1px;">
+<input type="file" id="prest-file-galeria" accept="image/*,application/pdf" style="position:fixed;top:-9999px;left:-9999px;opacity:0;width:1px;height:1px;">
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+      <svg width="52" height="52" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="alg1" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="alg2" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD"/>
+      <stop offset="100%" stop-color="#C4B5FD"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="36" height="36" rx="10" fill="url(#alg1)"/>
+  <rect width="36" height="36" rx="10" fill="url(#alg1)" opacity="0.3" filter="url(#glow)"/>
+  <path d="M10 12 H22 M10 18 H19 M10 12 V24" stroke="url(#alg2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="16,22 21,27 26,22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.95"/>
+  <line x1="21" y1="18" x2="21" y2="27" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+</svg>
+      <div>
+        <div class="auth-logo" style="margin-bottom:2px">Fluxo</div>
+        <div style="font-size:12px;color:var(--text3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Despesas em Movimento</div>
+      </div>
+    </div>
+    <div class="auth-tagline">◆ Gestão de viagens corporativas para PMEs</div>
+    <div class="auth-sub">Faça login para acessar seu painel</div>
+    <div class="role-toggle">
+      <button class="role-btn active" data-action="set-role" data-role="gestor"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Gestor</button>
+      <button class="role-btn" data-action="set-role" data-role="colaborador"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Colaborador</button>
+    </div>
+    <div class="field-group"><div class="field-label">E-mail</div><input class="field-input" type="email" id="auth-email" value="" inputmode="email" autocomplete="email" placeholder="seu email"></div>
+    <div class="field-group"><div class="field-label">Senha</div><input class="field-input" type="password" id="auth-pass" value="123456"></div>
+    <button class="btn-primary" data-action="login">Entrar →</button>
+    <div class="auth-hint" id="auth-hint-text">Gestor: demo.gestor@empresa / 12345 · Colaborador: demo.colaborador@empresa / 12345</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sidebar-overlay" id="sidebar-overlay" data-action="close-sidebar"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div style="width:32px;height:32px;flex-shrink:0"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lg1" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="lg2" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+  </defs>
+  <!-- Background pill -->
+  <rect width="36" height="36" rx="10" fill="url(#lg1)"/>
+  <!-- Flow arrow path — stylized F + arrow -->
+  <path d="M10 12 H22 M10 18 H19 M10 12 V24" stroke="url(#lg2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="16,22 21,27 26,22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>
+  <line x1="21" y1="18" x2="21" y2="27" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+</svg></div>
+        <div class="logo-text">Fluxo</div>
+      </div>
+      <div class="logo-sub" id="sidebar-role-label">Painel do Gestor</div>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item active" data-action="go-page" data-page="dashboard" data-nav-id="nav-dashboard" id="nav-dashboard"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</div>
+      <div class="nav-item" data-action="go-page" data-page="extrato" data-nav-id="nav-extrato" id="nav-extrato"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Extrato</div>
+      <div class="nav-item" data-action="go-page" data-page="historico" data-nav-id="nav-historico" id="nav-historico"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Histórico</div>
+      <div class="nav-item" data-action="go-page" data-page="prestacao" data-nav-id="nav-prestacao" id="nav-prestacao"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Prestação</div>
+      <div class="nav-label" style="margin-top:12px">Gestor</div>
+      <div class="nav-item" data-action="go-page" data-page="relatorios" data-nav-id="nav-relatorios" id="nav-relatorios" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="18" y1="12" x2="10" y2="12"/><line x1="18" y1="16" x2="10" y2="16"/></svg></span> Relatórios</div>
+      <div class="nav-item" data-action="go-page" data-page="comparativo" data-nav-id="nav-comparativo" id="nav-comparativo" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Comparativo</div>
+      <div class="nav-item" data-action="go-page" data-page="verbas" data-nav-id="nav-verbas" id="nav-verbas" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Fluxos</div>
+      <div class="nav-item" data-action="go-page" data-page="log" data-nav-id="nav-log" id="nav-log" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Log de Ações</div>
+      <div class="nav-item" data-action="go-page" data-page="politica" data-nav-id="nav-politica" id="nav-politica" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Políticas</div>
+      <div class="nav-item" data-action="go-page" data-page="colaboradores" data-nav-id="nav-colaboradores" id="nav-colaboradores" style="display:none"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Colaboradores</div>
+    </nav>
+    <!-- saldo em tempo real para colaborador -->
+    <div class="sidebar-saldo" id="sidebar-saldo" style="display:none">
+      <div class="sidebar-saldo-label">Saldo disponível</div>
+      <div class="sidebar-saldo-val" id="sidebar-saldo-val">—</div>
+      <div class="sidebar-saldo-sub" id="sidebar-saldo-sub">—</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-initials">JD</div>
+      <div class="user-info"><div class="user-name" id="user-display-name">—</div><div class="user-role" id="user-display-role">—</div></div>
+      <button class="logout-btn" data-action="logout"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" data-action="open-sidebar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <div><div class="page-title" id="top-title">Dashboard</div><div class="page-subtitle" id="top-sub">Visão geral</div></div>
+      </div>
+      <!-- saldo pill mobile colaborador -->
+      <div class="topbar-saldo-pill" id="topbar-saldo-pill">
+        <span style="display:flex;align-items:center;color:var(--green)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        <div><div class="topbar-saldo-val" id="topbar-saldo-val">—</div><div class="topbar-saldo-lbl">disponível</div></div>
+      </div>
+      <div class="user-avatar" id="topbar-avatar" style="width:30px;height:30px;font-size:11px;cursor:pointer" data-action="open-sidebar">JD</div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="alert-banner" id="alert-saldo"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span id="alert-saldo-txt"></span></div>
+        <div class="grid-4">
+          <div class="card stat-card blue"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div class="stat-value" id="s-total">—</div><div class="stat-label">Total em Fluxos</div><div class="stat-change up" id="s-total-s"></div></div>
+          <div class="card stat-card purple"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-value" id="s-usado">—</div><div class="stat-label">Total Utilizado</div><div class="stat-change" style="color:var(--text3)" id="s-usado-s"></div></div>
+          <div class="card stat-card green"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="stat-value" id="s-notas">—</div><div class="stat-label">Notas Fiscais</div><div class="stat-change up" id="s-notas-s"></div></div>
+          <div class="card stat-card yellow"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-value" id="s-pend">—</div><div class="stat-label">Pendentes</div><div class="stat-change down" id="s-pend-s"></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="table-header"><div class="section-title">Últimas Despesas</div></div>
+            <div class="table-scroll"><table><thead><tr><th>Colaborador</th><th>Estabelecimento</th><th>Categoria</th><th>Valor</th><th>Status</th></tr></thead><tbody id="dash-table"></tbody></table></div>
+            <div class="expense-cards" id="dash-cards"></div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:16px">Gastos por Categoria</div>
+            <canvas id="chart-cat" style="width:100%;display:block"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXTRATO -->
+      <div class="page" id="page-extrato">
+        <div id="extrato-content"></div>
+      </div>
+
+      <!-- HISTÓRICO -->
+      <div class="page" id="page-historico">
+        <div class="card">
+          <div class="table-header">
+            <div class="section-title">Histórico de Despesas</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn-sm green" data-action="export-excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <select class="filter-input" id="f-status" data-change="render-historico"><option value="">Status: Todos</option><option value="Aprovado">Aprovado</option><option value="Pendente">Pendente</option><option value="Rejeitado">Rejeitado</option></select>
+            <select class="filter-input" id="f-colab" data-change="render-historico"><option value="">Colaborador: Todos</option></select>
+            <input class="filter-input" type="date" id="f-de" data-change="render-historico" placeholder="De">
+            <input class="filter-input" type="date" id="f-ate" data-change="render-historico" placeholder="Até">
+            <input class="filter-input" type="text" id="f-busca" data-input="render-historico" placeholder="Buscar...">
+          </div>
+          <div class="table-scroll"><table><thead><tr><th>Data</th><th>Colaborador</th><th>Estabelecimento</th><th>Categoria</th><th>Valor</th><th>Fluxo</th><th>Status</th><th id="hist-action-col"></th></tr></thead><tbody id="hist-table"></tbody></table></div>
+          <div class="expense-cards" id="hist-cards"></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:10px;text-align:right" id="hist-total-row"></div>
+        </div>
+      </div>
+
+      <!-- PRESTAÇÃO -->
+      <div class="page" id="page-prestacao"><div id="prest-content"></div></div>
+
+      <!-- RELATÓRIOS (gestor) -->
+      <div class="page" id="page-relatorios">
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="section-title" style="margin-bottom:14px">Gerar Relatório PDF</div>
+            <div class="field-group"><div class="field-label">Colaborador</div><div class="select-wrapper"><select class="field-input" id="rel-colab"><option value="">Todos</option></select></div></div>
+            <div class="field-group"><div class="field-label">Fluxo / Viagem</div><div class="select-wrapper"><select class="field-input" id="rel-verba"><option value="">Todas</option></select></div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="field-group"><div class="field-label">De</div><input class="field-input" type="date" id="rel-de"></div>
+              <div class="field-group"><div class="field-label">Até</div><input class="field-input" type="date" id="rel-ate"></div>
+            </div>
+            <button class="btn-primary" data-action="gerar-pdf"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Gerar PDF</button>
+          </div>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:14px">Gastos por Categoria</div>
+            <canvas id="chart-relat" style="width:100%;display:block"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-header"><div class="section-title">Pré-visualização</div></div>
+          <div id="rel-preview"></div>
+        </div>
+      </div>
+
+      <!-- COMPARATIVO (gestor) -->
+      <div class="page" id="page-comparativo">
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="section-title" style="margin-bottom:16px">Uso do Crédito por Colaborador</div>
+            <div id="comp-bars"></div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:14px">Distribuição de Gastos</div>
+            <canvas id="chart-comp" height="200"></canvas>
+          </div>
+        </div>
+        <div class="colab-grid" id="comp-colab-cards"></div>
+      </div>
+
+      <!-- VERBAS (gestor) -->
+      <div class="page" id="page-verbas">
+        <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(79,124,255,.07),rgba(124,92,252,.07));border-color:rgba(79,124,255,.22)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div><div class="section-title" style="margin-bottom:3px">Lançar Crédito</div><div style="font-size:12px;color:var(--text2)">Atribua saldo a um colaborador</div></div>
+            <button class="btn-primary" style="width:auto;padding:11px 20px;font-size:13px" data-action="open-nova-fluxo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Crédito</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-header"><div class="section-title">Fluxos / Créditos</div></div>
+          <div class="table-scroll"><table><thead><tr><th>Colaborador</th><th>Motivo</th><th>Crédito</th><th>Utilizado</th><th>Saldo</th><th>%</th><th>Status</th></tr></thead><tbody id="verbas-table"></tbody></table></div>
+          <div class="expense-cards" id="verbas-cards"></div>
+        </div>
+      </div>
+
+      <!-- LOG (gestor) -->
+      <div class="page" id="page-log">
+        <div class="card">
+          <div class="table-header"><div class="section-title">Log de Ações</div><div style="font-size:12px;color:var(--text3)" id="log-count"></div></div>
+          <div id="log-list"></div>
+        </div>
+      </div>
+
+      <!-- COLABORADORES -->
+      <div class="page" id="page-colaboradores">
+        <div class="card" style="margin-bottom:18px;background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(139,92,246,.04));border-color:rgba(59,130,246,.18)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+            <div>
+              <div class="section-title" style="margin-bottom:3px">Colaboradores</div>
+              <div style="font-size:12px;color:var(--text2)">Gerencie quem pode acessar o sistema e receber verbas</div>
+            </div>
+            <button class="btn-primary" style="width:auto;padding:11px 22px;font-size:13px" data-action="abrir-novo-colab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Cadastrar Colaborador</button>
+          </div>
+        </div>
+        <!-- busca e filtros -->
+        <div class="card" style="margin-bottom:18px;padding:14px">
+          <div class="filter-row" style="margin-bottom:0">
+            <input class="filter-input" type="text" id="colab-busca" data-input="render-colaboradores" placeholder="Buscar por nome, e-mail ou depto...">
+            <select class="filter-input" id="colab-filtro-status" data-change="render-colaboradores">
+              <option value="">Todos os status</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+          </div>
+        </div>
+        <!-- lista -->
+        <div id="colab-list-content"></div>
+      </div>
+
+
+      <!-- POLÍTICA -->
+      <div class="page" id="page-politica">
+        <div class="card" style="margin-bottom:18px;background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(139,92,246,.04));border-color:rgba(59,130,246,.18)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <div class="section-title" style="margin-bottom:3px">Política de Despesas</div>
+              <div style="font-size:12px;color:var(--text2)">Defina limites por categoria — válidos para todos os colaboradores</div>
+            </div>
+            <button class="btn-primary" style="width:auto;padding:11px 22px;font-size:13px" data-action="salvar-politica">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Salvar Política
+            </button>
+          </div>
+        </div>
+        <div id="politica-content"></div>
+      </div>
+    </div><!-- /content -->
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bn-item active" id="bn-dashboard" data-action="go-page" data-page="dashboard" data-nav-id="nav-dashboard" data-bn-target="bn-dashboard"><div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div class="bn-label">Início</div></div>
+    <div class="bn-item" id="bn-extrato" data-action="go-page" data-page="extrato" data-nav-id="nav-extrato" data-bn-target="bn-extrato"><div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="bn-label">Extrato</div></div>
+    <div class="bn-fab" data-action="go-page" data-page="prestacao" data-nav-id="nav-prestacao" data-bn-target="bn-prest">
+      <div class="bn-fab-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="bn-fab-label">Prestação</div>
+    </div>
+    <div class="bn-item" id="bn-historico" data-action="go-page" data-page="historico" data-nav-id="nav-historico" data-bn-target="bn-historico"><div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div><div class="bn-label">Histórico</div></div>
+    <div class="bn-item" id="bn-menu" data-action="open-sidebar"><div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div><div class="bn-label">Menu</div></div>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<!-- Nova verba -->
+<div class="modal-overlay" id="modal-verba">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Lançar Crédito</div>
+    <div class="modal-sub">Atribua saldo a um colaborador</div>
+    <div class="field-group"><div class="field-label">Colaborador</div><div class="select-wrapper"><select class="field-input" id="mv-colab" data-change="atualizar-saldo-colab"></select></div><div id="mv-colab-saldo" style="font-size:11px;color:var(--text3);margin-top:5px"></div></div>
+    <div class="field-group"><div class="field-label">Motivo / Viagem</div><input class="field-input" id="mv-motivo" placeholder="Ex: Viagem São Paulo — Jun/25"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field-group"><div class="field-label">Valor do Crédito (R$)</div><input class="field-input" id="mv-valor" type="number" inputmode="decimal" placeholder="1000,00" data-input="preview-credito"></div>
+      <div class="field-group"><div class="field-label">Data de Início</div><input class="field-input" id="mv-data" type="date"></div>
+    </div>
+    <div id="mv-preview" style="display:none;background:rgba(79,124,255,.07);border:1px solid rgba(79,124,255,.2);border-radius:9px;padding:12px;margin-bottom:4px">
+      <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">Resumo</div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="color:var(--text2)">Colaborador</span><span id="mv-prev-colab" style="font-weight:600">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Crédito</span><span id="mv-prev-valor" style="font-weight:700;color:var(--accent);font-family:Syne,sans-serif;font-size:15px">—</span></div>
+    </div>
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-verba">Cancelar</button><button class="btn-confirm" data-action="criar-fluxo">Confirmar Crédito</button></div>
+  </div>
+</div>
+
+<!-- Adicionar item prestação -->
+<div class="modal-overlay" id="modal-item-prest">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Adicionar Despesa</div>
+    <div class="modal-sub">Anexe o comprovante e preencha os dados</div>
+    <div id="prest-foto-area" style="margin-bottom:14px">
+      <div id="prest-foto-preview" style="display:none;position:relative;border-radius:9px;overflow:hidden;margin-bottom:9px">
+        <img id="prest-img-preview" src="" style="width:100%;max-height:180px;object-fit:contain;background:#1a1a2a;border-radius:9px;">
+        <button data-action="remover-foto-prest" style="position:absolute;top:7px;right:7px;background:rgba(255,92,92,.9);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <div id="prest-foto-btns" style="display:flex;gap:8px">
+        <button type="button" data-action="abrir-camera-prest" style="flex:1;padding:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Câmera</button>
+        <button type="button" data-action="abrir-galeria-prest" style="flex:1;padding:11px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Galeria</button>
+      </div>
+    </div>
+    <div class="field-group"><div class="field-label">Categoria</div><div id="cat-chips"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field-group"><div class="field-label">Valor (R$)</div><input class="field-input" id="pi-valor" type="number" inputmode="decimal" placeholder="0,00" style="font-size:17px;font-weight:700;color:var(--accent)" data-input="verificar-politica"></div>
+      <div class="field-group"><div class="field-label">Data</div><input class="field-input" id="pi-data" type="date"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="pi-hora-row">
+      <div class="field-group"><div class="field-label">Horário da despesa</div><input class="field-input" id="pi-hora" type="time" data-input="verificar-politica"></div>
+      <div class="field-group" style="display:flex;align-items:flex-end;padding-bottom:2px"><div style="font-size:11px;color:var(--text3)">Usado para verificar limite de almoço / jantar</div></div>
+    </div>
+    <div class="field-group"><div class="field-label">Estabelecimento / Descrição</div><input class="field-input" id="pi-desc" type="text" placeholder="Ex: Almoço com cliente, Shell posto km 42..." data-input="verificar-politica"></div>
+    <!-- aviso de política -->
+    <div class="politica-aviso" id="politica-aviso">
+      <div class="politica-aviso-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span id="politica-aviso-title-txt">Limite de política excedido</span>
+      </div>
+      <div class="politica-aviso-body" id="politica-aviso-body"></div>
+      <textarea class="politica-aviso-just" id="pi-justificativa" rows="2" placeholder="Justificativa obrigatória para aprovação do gestor..."></textarea>
+    </div>
+    <!-- edição -->
+    <input type="hidden" id="pi-edit-idx" value="-1">
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-item-prest">Cancelar</button><button class="btn-confirm" data-action="add-item-prest">+ Adicionar</button></div>
+  </div>
+</div>
+
+<!-- Enviar prestação -->
+<div class="modal-overlay" id="modal-enviar-prest">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Enviar Prestação</div>
+    <div class="modal-sub">Revise antes de enviar ao gestor</div>
+    <div id="enviar-prest-resumo"></div>
+    <div class="field-group" style="margin-top:14px"><div class="field-label">Observação geral</div><input class="field-input" id="pv-obs" placeholder="Algum detalhe para o gestor..."></div>
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-enviar-prest">Cancelar</button><button class="btn-confirm" data-action="confirmar-prestacao">Enviar ao Gestor</button></div>
+  </div>
+</div>
+
+<!-- Editar despesa -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Editar Despesa</div>
+    <div class="modal-sub">Corrija os dados antes da aprovação</div>
+    <input type="hidden" id="edit-id">
+    <div class="field-group"><div class="field-label">Estabelecimento</div><input class="field-input" id="edit-estab" type="text"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field-group"><div class="field-label">Valor (R$)</div><input class="field-input" id="edit-valor" type="number" inputmode="decimal"></div>
+      <div class="field-group"><div class="field-label">Data</div><input class="field-input" id="edit-data" type="date"></div>
+    </div>
+    <div class="field-group"><div class="field-label">Categoria</div><div class="select-wrapper"><select class="field-input" id="edit-cat"><option>Alimentação</option><option>Transporte</option><option>Hospedagem</option><option>Combustível</option><option>Estacionamento</option><option>Uber / Taxi</option><option>Passagem</option><option>Pedágio</option><option>Material</option><option>Outros</option></select></div></div>
+    <div class="field-group"><div class="field-label">Observação</div><input class="field-input" id="edit-obs" type="text" placeholder="Opcional..."></div>
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-editar">Cancelar</button><button class="btn-confirm" data-action="salvar-edicao">Salvar Alteração</button></div>
+  </div>
+</div>
+
+<!-- MODAL cadastro/editar colaborador -->
+<div class="modal-overlay" id="modal-colab">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-colab-title">Cadastrar Colaborador</div>
+    <div class="modal-sub">Preencha os dados de acesso e perfil</div>
+    <input type="hidden" id="colab-edit-id" value="">
+
+    <!-- avatar / cor -->
+    <div class="field-group">
+      <div class="field-label">Cor do Avatar</div>
+      <div class="avatar-picker" id="avatar-picker"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Nome completo *</div>
+        <input class="field-input" id="colab-nome" type="text" placeholder="Ex: João Silva">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Departamento *</div>
+        <input class="field-input" id="colab-dept" type="text" placeholder="Ex: Comercial">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">E-mail de acesso *</div>
+      <input class="field-input" id="colab-email" type="email" inputmode="email" placeholder="email do colaborador">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Telefone</div>
+        <input class="field-input" id="colab-telefone" type="tel" inputmode="tel" placeholder="(11) 99999-9999">
+      </div>
+      <div class="field-group">
+        <div class="field-label">CPF</div>
+        <input class="field-input" id="colab-cpf" type="text" inputmode="numeric" placeholder="000.000.000-00">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Cargo</div>
+        <input class="field-input" id="colab-cargo" type="text" placeholder="Ex: Analista Comercial">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Centro de Custo</div>
+        <input class="field-input" id="colab-cc" type="text" placeholder="Ex: CC-001">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <div class="field-label">Senha de acesso *</div>
+        <input class="field-input" id="colab-senha" type="password" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Status</div>
+        <div class="select-wrapper">
+          <select class="field-input" id="colab-status">
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" data-action="close-modal" data-modal-id="modal-colab">Cancelar</button>
+      <button class="btn-confirm" data-action="salvar-colab">Salvar Colaborador</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL detalhe colaborador -->
+<div class="modal-overlay" id="modal-colab-detalhe">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="modal-colab-detalhe-body"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-ghost" data-action="close-modal" data-modal-id="modal-colab-detalhe">Fechar</button>
+      <button class="btn-confirm" id="btn-editar-colab" >Editar</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-text" id="loading-text">Processando...</div></div>
+<div class="toast" id="toast"></div>
+<script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
