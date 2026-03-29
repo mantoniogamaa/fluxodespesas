@@ -10,7 +10,7 @@ import { createRenderers } from './renderers.js';
 import { createActions } from './actions.js';
 import { bindEvents } from './events.js';
 
-export function initApp() {
+export async function initApp() {
   const context = createAppContext({ FluxoState, FluxoBusiness, sum });
   context.App.selectedAvatarColor = COLORS[0];
 
@@ -135,7 +135,7 @@ export function initApp() {
     getColab: context.getColab,
   });
 
-  uiApi.ensureSeed();
+  await uiApi.ensureSeed();
   uiApi.setRole(context.auth().currentRole || 'gestor');
   context.App.unsub = FluxoState.subscribe(() => {
     // reservado para reatividade futura

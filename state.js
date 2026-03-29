@@ -57,14 +57,15 @@ export const FluxoState = (() => {
     return target;
   }
 
-  function bootstrap(seed) {
+  async function bootstrap(seed) {
     const base = clone(seed || {});
     mergeState(state, base);
 
     if (FluxoRepository) {
-      const persisted = FluxoRepository.loadState();
+      const persisted = await Promise.resolve(FluxoRepository.loadState());
       if (persisted) mergeState(state, persisted);
-      state.ui.rascunhoOffline = FluxoRepository.loadDraft();
+      const draft = await Promise.resolve(FluxoRepository.loadDraft());
+      state.ui.rascunhoOffline = draft;
     }
 
     state.meta.hydratedAt = new Date().toISOString();
@@ -94,15 +95,15 @@ export const FluxoState = (() => {
     notify();
   }
 
-  function save() {
+  async function save() {
     if (FluxoRepository) {
-      FluxoRepository.saveState({
+      await Promise.resolve(FluxoRepository.saveState({
         auth: state.auth,
         data: state.data,
         ui: { ...state.ui, rascunhoOffline: [] },
         meta: state.meta,
-      });
-      FluxoRepository.saveDraft(state.ui.rascunhoOffline || []);
+      }));
+      await Promise.resolve(FluxoRepository.saveDraft(state.ui.rascunhoOffline || []));
     }
     notify();
   }

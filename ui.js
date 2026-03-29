@@ -71,11 +71,11 @@ function closeSidebar() {
 
 function persist() { FluxoState.save(); renderAll(); }
 
-function ensureSeed() {
-      FluxoState.bootstrap(SEED_STATE);
+async function ensureSeed() {
+      await FluxoState.bootstrap(SEED_STATE);
       if (!data().politica || !Object.keys(data().politica).length) {
         data().politica = JSON.parse(JSON.stringify(DEFAULT_POLICY));
-        FluxoState.save();
+        await FluxoState.save();
       }
     }
 
