@@ -69,8 +69,10 @@ function closeSidebar() {
       byId('sidebar-overlay')?.classList.remove('open');
     }
 
-function persist() { FluxoState.save(); renderAll(); }
+// persist: salva e re-renderiza (save é async mas persist não precisa aguardar)
+function persist() { FluxoState.save(); renderRuntime.renderAll?.(); }
 
+// ensureSeed: async — aguarda o bootstrap do Supabase antes de continuar
 async function ensureSeed() {
       await FluxoState.bootstrap(SEED_STATE);
       if (!data().politica || !Object.keys(data().politica).length) {
@@ -96,7 +98,7 @@ function exportHistoricoCsv() {
       despesas.forEach((item) => {
         rows.push([item.data, getColab(item.colabId)?.nome || '', item.estab, categoryLabel(item.cat), String(item.valor), item.status]);
       });
-      const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('\"', '\"\"')}"`).join(';')).join('\n');
+      const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}`).join(';')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

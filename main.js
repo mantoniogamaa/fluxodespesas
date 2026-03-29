@@ -4,7 +4,7 @@ import FluxoState from './state.js';
 import FluxoBusiness from './business.js';
 import { initApp } from './app.js';
 
-// Registra o adapter Supabase ANTES de qualquer outro módulo usar o repository
+// 1. Cria e registra o adapter Supabase ANTES de qualquer outro módulo usar o repository
 const FluxoStorage = createSupabaseAdapter();
 FluxoRepository.use(FluxoStorage);
 

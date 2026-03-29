@@ -57,6 +57,7 @@ export const FluxoState = (() => {
     return target;
   }
 
+  // async: suporta adapters síncronos (localStorage) e assíncronos (Supabase)
   async function bootstrap(seed) {
     const base = clone(seed || {});
     mergeState(state, base);
@@ -65,7 +66,7 @@ export const FluxoState = (() => {
       const persisted = await Promise.resolve(FluxoRepository.loadState());
       if (persisted) mergeState(state, persisted);
       const draft = await Promise.resolve(FluxoRepository.loadDraft());
-      state.ui.rascunhoOffline = draft;
+      state.ui.rascunhoOffline = Array.isArray(draft) ? draft : [];
     }
 
     state.meta.hydratedAt = new Date().toISOString();
@@ -95,6 +96,7 @@ export const FluxoState = (() => {
     notify();
   }
 
+  // async: suporta adapters assíncronos
   async function save() {
     if (FluxoRepository) {
       await Promise.resolve(FluxoRepository.saveState({

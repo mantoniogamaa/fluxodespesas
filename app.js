@@ -135,6 +135,7 @@ export async function initApp() {
     getColab: context.getColab,
   });
 
+  // Aguarda o bootstrap assíncrono (Supabase) ANTES de renderizar
   await uiApi.ensureSeed();
   uiApi.setRole(context.auth().currentRole || 'gestor');
   context.App.unsub = FluxoState.subscribe(() => {
