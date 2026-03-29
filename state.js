@@ -57,18 +57,24 @@ export const FluxoState = (() => {
     return target;
   }
 
-  // async: suporta adapters síncronos (localStorage) e assíncronos (Supabase)
   async function bootstrap(seed) {
     const base = clone(seed || {});
     mergeState(state, base);
 
     if (FluxoRepository) {
       const persisted = await Promise.resolve(FluxoRepository.loadState());
-      if (persisted) mergeState(state, persisted);
+      if (persisted) {
+        // Restaura apenas os dados — nunca restaura auth (sessão é sempre local)
+        if (persisted.data) mergeState(state.data, persisted.data);
+        if (persisted.ui) mergeState(state.ui, persisted.ui);
+        if (persisted.meta) mergeState(state.meta, persisted.meta);
+      }
       const draft = await Promise.resolve(FluxoRepository.loadDraft());
       state.ui.rascunhoOffline = Array.isArray(draft) ? draft : [];
     }
 
+    // Auth sempre começa limpo — usuário deve logar toda sessão
+    state.auth = { currentRole: 'gestor', currentUser: null };
     state.meta.hydratedAt = new Date().toISOString();
     notify();
     return get();
@@ -96,11 +102,10 @@ export const FluxoState = (() => {
     notify();
   }
 
-  // async: suporta adapters assíncronos
   async function save() {
     if (FluxoRepository) {
+      // Salva apenas data, ui e meta — nunca auth
       await Promise.resolve(FluxoRepository.saveState({
-        auth: state.auth,
         data: state.data,
         ui: { ...state.ui, rascunhoOffline: [] },
         meta: state.meta,
