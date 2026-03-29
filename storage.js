@@ -1,6 +1,7 @@
-import { createLocalStorageAdapter } from './local-storage-adapter.js';
+// storage.js — troca o adapter ativo para Supabase
+import { createSupabaseAdapter } from './supabase-adapter.js';
 
-const FluxoStorage = createLocalStorageAdapter();
+const FluxoStorage = createSupabaseAdapter();
 
-export { createLocalStorageAdapter };
+export { createSupabaseAdapter };
 export default FluxoStorage;
