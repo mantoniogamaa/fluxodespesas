@@ -175,6 +175,8 @@ export async function initApp() {
         // Carrega rascunho do usuário
         const remoteDraft = await loadRascunho(sessionUser.id);
         if (Array.isArray(remoteDraft) && remoteDraft.length) FluxoState.setRemoteDraft(remoteDraft);
+        // Força renderAll após carregar tudo para garantir estado atualizado na UI
+        renderers.renderAll();
       }
     } catch (error) {
       console.error('Supabase session bootstrap error', error);

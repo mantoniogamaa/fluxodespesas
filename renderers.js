@@ -26,10 +26,8 @@ export function createRenderers({
 }) {
 
 function renderChrome() {
-      // Lê auth diretamente do estado para evitar problema de closure
-      const authState = FluxoState.get()?.auth;
-      const user = authState?.currentUser || currentUser();
-      const gestor = (authState?.currentRole === 'gestor') || isGestor();
+      const user = currentUser();
+      const gestor = isGestor();
       byId('auth-screen').style.display = user ? 'none' : 'flex';
       byId('app').style.display = user ? 'block' : 'none';
       if (!user) return;
@@ -557,9 +555,7 @@ function renderCurrentPage() {
 
 function renderAll() {
       renderChrome();
-      // Verifica auth tanto pelo currentUser quanto pelo currentRole (fallback para modo Supabase)
-      const authState = FluxoState.get()?.auth;
-      if (!authState?.currentUser && !authState?.currentRole) return;
+      if (!currentUser()) return;
       renderCurrentPage();
       renderAvatarPicker();
       hydrateFluxoModal();
