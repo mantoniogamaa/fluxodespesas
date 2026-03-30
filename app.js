@@ -73,6 +73,12 @@ export async function initApp() {
     FluxoRepository.detachCloud();
   }
 
+  // safeRenderAll usa renderRuntime para evitar problema de closure
+  const safeRenderAll = () => {
+    if (!FluxoState.get()?.auth?.currentUser) return;
+    if (renderRuntime.renderAll) renderRuntime.renderAll();
+  };
+
   const actions = createActions({
     FluxoState,
     FluxoBusiness,
@@ -104,12 +110,6 @@ export async function initApp() {
     fillColabForm: renderers.fillColabForm,
     closeSidebar: uiApi.closeSidebar,
   });
-
-  // safeRenderAll: verifica estado antes de renderizar (resolve problema de closure com Supabase)
-  const safeRenderAll = () => {
-    if (!FluxoState.get()?.auth?.currentUser) return;
-    renderers.renderAll();
-  };
 
   bindEvents({
     App: context.App,
