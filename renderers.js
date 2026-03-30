@@ -452,10 +452,19 @@ function renderAvatarPicker() {
       picker.innerHTML = COLORS.map((color) => `<button type="button" class="avatar-color ${App.selectedAvatarColor === color ? 'selected' : ''}" style="background:${color}" data-action="select-avatar-color" data-color="${color}"></button>`).join('');
     }
 
+function populatePoliticaSelect(selectedId) {
+      const select = byId('colab-politica');
+      if (!select) return;
+      const politicas = data()._politicas || [];
+      select.innerHTML = '<option value="">Padrão da empresa</option>' +
+        politicas.map(p => `<option value="${p.id}" ${String(p.id) === String(selectedId) ? 'selected' : ''}>${escapeHtml(p.nome)}</option>`).join('');
+    }
+
 function resetColabForm() {
       byId('modal-colab-title').textContent = 'Cadastrar Colaborador';
       byId('colab-edit-id').value = '';
-      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-senha'].forEach((id) => byId(id).value = '');
+      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-pix','colab-senha'].forEach((id) => { if(byId(id)) byId(id).value = ''; });
+      populatePoliticaSelect('');
       byId('colab-status').value = 'ativo';
       App.selectedAvatarColor = COLORS[0];
       renderAvatarPicker();
@@ -471,6 +480,8 @@ function fillColabForm(colab) {
       byId('colab-cpf').value = colab.cpf || '';
       byId('colab-cargo').value = colab.cargo || '';
       byId('colab-cc').value = colab.cc || '';
+      if(byId('colab-pix')) byId('colab-pix').value = colab.pix || '';
+      populatePoliticaSelect(colab._politica_id || colab.politicaId || '');
       byId('colab-senha').value = '';
       byId('colab-status').value = colab.status || 'ativo';
       App.selectedAvatarColor = colab.color || COLORS[0];
@@ -509,7 +520,7 @@ function groupByCategory(despesas) {
 function renderUsuarios() {
       const tbody = byId('usuarios-table');
       if (!tbody) return;
-      const usuarios = FluxoState.get()?.data?._usuarios || [];
+      const usuarios = data()._usuarios || [];
       if (!usuarios.length) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum usuário cadastrado. Clique em "Novo Usuário" para adicionar.</td></tr>';
         return;
@@ -570,6 +581,7 @@ function renderAll() {
     renderEnviarPrestResumo,
     renderAvatarPicker,
     resetColabForm,
+    populatePoliticaSelect,
     fillColabForm,
     showColabDetail,
     statusBadge,
