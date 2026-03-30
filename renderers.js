@@ -262,6 +262,13 @@ function renderPrestacaoItems() {
     }
 
 function renderRelatorios() {
+      // Preencher data no cabeçalho de impressão
+      const printDate = byId('rel-print-date');
+      if (printDate) {
+        const now = new Date();
+        printDate.innerHTML = `Gerado em ${now.toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}<br>Fluxo — Gestão de Despesas`;
+      }
+
       hydrateRelatorioSelects();
       const despesas = data().despesas.filter((item) => scopeFilter(item.colabId));
       const fColab = byId('rel-colab')?.value || '';
@@ -359,21 +366,23 @@ function renderPolitica() {
       byId('politica-content').innerHTML = CATEGORIES.map((cat) => {
         const config = pol[cat.id];
         if (!config) return '';
+        const icons = {alimentacao:'🍽️',hospedagem:'🏨',combustivel:'⛽',estacion:'🅿️',transporte:'🚌',uber:'🚗',passagem:'✈️',pedagio:'🛣️',material:'📦',outros:'•'};
+        const icon = icons[cat.id] || '•';
         if (cat.id === 'alimentacao') {
           return `
             <div class="politica-cat-row">
-              <div class="politica-cat-header"><div class="politica-cat-icon">🍽️</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
+              <div class="politica-cat-header"><div class="politica-cat-icon">${icon}</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
               <div class="politica-limite-row triple">
-                <div class="politica-limite-field"><div class="politica-limite-label">Almoço</div><input class="politica-limite-input" data-policy-field="${cat.id}.almoco.limite" type="number" value="${config.almoco.limite}"></div>
-                <div class="politica-limite-field"><div class="politica-limite-label">Jantar</div><input class="politica-limite-input" data-policy-field="${cat.id}.jantar.limite" type="number" value="${config.jantar.limite}"></div>
-                <div class="politica-limite-field"><div class="politica-limite-label">Outros</div><input class="politica-limite-input" data-policy-field="${cat.id}.outros.limite" type="number" value="${config.outros.limite}"></div>
+                <div class="politica-limite-field"><div class="politica-limite-label">Almoço</div><input class="politica-limite-input" data-policy-field="${cat.id}.almoco.limite" type="number" value="${config.almoco?.limite ?? config.almoco}"></div>
+                <div class="politica-limite-field"><div class="politica-limite-label">Jantar</div><input class="politica-limite-input" data-policy-field="${cat.id}.jantar.limite" type="number" value="${config.jantar?.limite ?? config.jantar}"></div>
+                <div class="politica-limite-field"><div class="politica-limite-label">Outros</div><input class="politica-limite-input" data-policy-field="${cat.id}.outros.limite" type="number" value="${config.outros?.limite ?? config.outros}"></div>
               </div>
             </div>`;
         }
         return `
           <div class="politica-cat-row">
-            <div class="politica-cat-header"><div class="politica-cat-icon">•</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
-            <div class="politica-limite-row"><div class="politica-limite-field"><div class="politica-limite-label">Limite</div><input class="politica-limite-input" data-policy-field="${cat.id}.limite" type="number" value="${config.limite}"></div></div>
+            <div class="politica-cat-header"><div class="politica-cat-icon">${icon}</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
+            <div class="politica-limite-row single"><div class="politica-limite-field"><div class="politica-limite-label">Limite (R$)</div><input class="politica-limite-input" data-policy-field="${cat.id}.limite" type="number" value="${config.limite}"></div></div>
           </div>`;
       }).join('');
     }
