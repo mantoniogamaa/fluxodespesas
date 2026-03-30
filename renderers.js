@@ -555,7 +555,9 @@ function renderCurrentPage() {
 
 function renderAll() {
       renderChrome();
-      if (!currentUser()) return;
+      // Verifica auth tanto pelo currentUser quanto pelo currentRole (fallback para modo Supabase)
+      const authState = FluxoState.get()?.auth;
+      if (!authState?.currentUser && !authState?.currentRole) return;
       renderCurrentPage();
       renderAvatarPicker();
       hydrateFluxoModal();
