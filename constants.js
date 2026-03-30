@@ -24,6 +24,7 @@ export const PAGE_META = {
   log: { title: 'Log de ações', subtitle: 'Auditoria operacional' },
   politica: { title: 'Políticas', subtitle: 'Limites por categoria' },
   colaboradores: { title: 'Colaboradores', subtitle: 'Cadastro e gestão de acessos' },
+  usuarios: { title: 'Usuários', subtitle: 'Perfis e acessos ao sistema' },
 };
 
 export const DEFAULT_POLICY = {
