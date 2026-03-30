@@ -9,6 +9,7 @@ export function bindEvents({
   openSidebar,
   closeSidebar,
   closeModal,
+  openModal,
   persist,
   exportHistoricoCsv,
   renderAll,
@@ -42,8 +43,6 @@ export function bindEvents({
   preencherUsuarioForm,
   handleSaveUsuario,
 }) {
-
-function bindEvents() {
       document.addEventListener('click', async (event) => {
         const actionEl = event.target.closest('[data-action]');
         if (!actionEl) return;
@@ -142,6 +141,4 @@ function bindEvents() {
       byId('prest-file-galeria')?.addEventListener('change', (event) => updateFilePreview(event.target.files?.[0]));
       byId('btn-editar-colab')?.setAttribute('data-action', 'editar-colab-detalhe');
     }
-
-  return { bindEvents };
 }
