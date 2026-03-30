@@ -25,20 +25,9 @@ export function createRenderers({
   openModal,
 }) {
 
-function _isGestor() {
-      const auth = FluxoState.get()?.auth || {};
-      return auth.currentRole === 'gestor' || auth.currentUser?.role === 'gestor';
-    }
-
-    function _currentUser() {
-      return FluxoState.get()?.auth?.currentUser || null;
-    }
-
-    function renderChrome() {
-      // Lê direto do FluxoState para garantir estado atual (evita problema de closure)
-      const _auth = FluxoState.get()?.auth || {};
-      const user = _auth.currentUser || null;
-      const gestor = _auth.currentRole === 'gestor' || user?.role === 'gestor';
+function renderChrome() {
+      const user = currentUser();
+      const gestor = isGestor();
       byId('auth-screen').style.display = user ? 'none' : 'flex';
       byId('app').style.display = user ? 'block' : 'none';
       if (!user) return;
@@ -62,10 +51,7 @@ function _isGestor() {
         const active = item.dataset.page === App.currentPage;
         item.classList.toggle('active', active);
       });
-      const _currentPage = App.currentPage;
-      qsa('.page').forEach((pageEl) => {
-        pageEl.classList.toggle('active', pageEl.id === ('page-' + _currentPage));
-      });
+      qsa('.page').forEach((pageEl) => pageEl.classList.toggle('active', pageEl.id === `page-${App.currentPage}`));
 
       const saldo = user.colabId ? availableSaldo(user.colabId) : 0;
       const showSaldo = !gestor && user.colabId;
@@ -120,8 +106,8 @@ function renderDashboard() {
       drawBarChart(byId('chart-cat'), grouped);
 
       const alert = byId('alert-saldo');
-      if (!_isGestor() && _currentUser()?.colabId) {
-        const saldo = availableSaldo(_currentUser().colabId);
+      if (!isGestor() && currentUser()?.colabId) {
+        const saldo = availableSaldo(currentUser().colabId);
         const show = saldo < 300;
         alert.classList.toggle('show', show);
         byId('alert-saldo-txt').textContent = show ? `Seu saldo disponível está em ${currency(saldo)}. Revise a necessidade de novo crédito.` : '';
@@ -131,7 +117,7 @@ function renderDashboard() {
     }
 
 function renderExtrato() {
-      const user = _currentUser();
+      const user = currentUser();
       const fluxos = data().verbas.filter((item) => scopeFilter(item.colabId));
       const cards = fluxos.map((item) => {
         const colab = getColab(item.colabId);
@@ -152,7 +138,7 @@ function renderExtrato() {
       byId('extrato-content').innerHTML = `
         <div class="card" style="margin-bottom:14px">
           <div class="section-title" style="margin-bottom:6px">Resumo do extrato</div>
-          <div class="page-subtitle">${_isGestor() ? 'Visão consolidada de todos os colaboradores' : `Visão individual de ${escapeHtml(user?.name || '')}`}</div>
+          <div class="page-subtitle">${isGestor() ? 'Visão consolidada de todos os colaboradores' : `Visão individual de ${escapeHtml(user?.name || '')}`}</div>
         </div>
         ${cards || '<div class="card"><div class="empty-state"><div class="empty-text">Nenhum fluxo disponível.</div></div></div>'}`;
     }
@@ -182,7 +168,7 @@ function renderHistorico() {
         .filter((item) => !fBusca || [item.estab, item.obs, categoryLabel(item.cat), getColab(item.colabId)?.nome || ''].join(' ').toLowerCase().includes(fBusca))
         .sort((a, b) => String(b.data).localeCompare(String(a.data)));
 
-      byId('hist-action-col').textContent = _isGestor() ? 'Ações' : '';
+      byId('hist-action-col').textContent = isGestor() ? 'Ações' : '';
       byId('hist-table').innerHTML = despesas.map((item) => historicoRow(item)).join('') || `<tr><td colspan="8"><div class="empty-state"><div class="empty-text">Nenhuma despesa encontrada.</div></div></td></tr>`;
       byId('hist-cards').innerHTML = despesas.map((item) => historicoCard(item)).join('');
       byId('hist-total-row').textContent = `Total filtrado: ${currency(sum(despesas, (item) => item.valor))}`;
@@ -200,7 +186,7 @@ function historicoRow(item) {
           <td>${currency(item.valor)}</td>
           <td>${escapeHtml(fluxo?.motivo || '—')}</td>
           <td>${statusBadge(item.status)}</td>
-          <td>${_isGestor() ? historicoActions(item) : ''}</td>
+          <td>${isGestor() ? historicoActions(item) : ''}</td>
         </tr>`;
     }
 
@@ -210,12 +196,12 @@ function historicoCard(item) {
         <div class="exp-card">
           <div class="exp-card-top"><div><div class="exp-card-estab">${escapeHtml(item.estab)}</div><div class="exp-card-meta">${escapeHtml(colab?.nome || '—')} · ${dateBr(item.data)}</div></div><div class="exp-card-valor">${currency(item.valor)}</div></div>
           <div class="exp-card-meta"><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span>${statusBadge(item.status)}</div>
-          ${_isGestor() ? `<div class="exp-card-actions">${historicoActions(item)}</div>` : ''}
+          ${isGestor() ? `<div class="exp-card-actions">${historicoActions(item)}</div>` : ''}
         </div>`;
     }
 
 function historicoActions(item) {
-      if (!_isGestor()) return '';
+      if (!isGestor()) return '';
       const actions = [];
       if (item.status === 'Pendente') {
         actions.push(`<button class="btn-sm green" data-action="aprovar-despesa" data-id="${item.id}">Aprovar</button>`);
@@ -276,13 +262,11 @@ function renderPrestacaoItems() {
     }
 
 function renderRelatorios() {
-      // Preencher data no cabeçalho de impressão
-      const printDate = byId('rel-print-date');
+      var printDate = byId('rel-print-date');
       if (printDate) {
-        const now = new Date();
-        printDate.innerHTML = `Gerado em ${now.toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}<br>Fluxo — Gestão de Despesas`;
+        var now = new Date();
+        printDate.innerHTML = 'Gerado em ' + now.toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'}) + '<br>Fluxo — Gestão de Despesas';
       }
-
       hydrateRelatorioSelects();
       const despesas = data().despesas.filter((item) => scopeFilter(item.colabId));
       const fColab = byId('rel-colab')?.value || '';
@@ -348,7 +332,7 @@ function renderFluxos() {
     }
 
 function renderLog() {
-      const logs = _isGestor() ? data().logAcoes : data().logAcoes.filter((item) => item.texto.toLowerCase().includes((_currentUser()?.name || '').toLowerCase()));
+      const logs = isGestor() ? data().logAcoes : data().logAcoes.filter((item) => item.texto.toLowerCase().includes((currentUser()?.name || '').toLowerCase()));
       byId('log-count').textContent = `${logs.length} registros`;
       byId('log-list').innerHTML = logs.map((item) => `
         <div class="log-item">
@@ -380,22 +364,22 @@ function renderPolitica() {
       byId('politica-content').innerHTML = CATEGORIES.map((cat) => {
         const config = pol[cat.id];
         if (!config) return '';
-        const icons = {alimentacao:'🍽️',hospedagem:'🏨',combustivel:'⛽',estacion:'🅿️',transporte:'🚌',uber:'🚗',passagem:'✈️',pedagio:'🛣️',material:'📦',outros:'•'};
-        const icon = icons[cat.id] || '•';
+        var icons = {alimentacao:'🍽️',hospedagem:'🏨',combustivel:'⛽',estacion:'🅿️',transporte:'🚌',uber:'🚗',passagem:'✈️',pedagio:'🛣️',material:'📦',outros:'•'};
+        var icon = icons[cat.id] || '•';
         if (cat.id === 'alimentacao') {
           return `
             <div class="politica-cat-row">
               <div class="politica-cat-header"><div class="politica-cat-icon">${icon}</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
               <div class="politica-limite-row triple">
-                <div class="politica-limite-field"><div class="politica-limite-label">Almoço</div><input class="politica-limite-input" data-policy-field="${cat.id}.almoco.limite" type="number" value="${config.almoco?.limite ?? config.almoco}"></div>
-                <div class="politica-limite-field"><div class="politica-limite-label">Jantar</div><input class="politica-limite-input" data-policy-field="${cat.id}.jantar.limite" type="number" value="${config.jantar?.limite ?? config.jantar}"></div>
-                <div class="politica-limite-field"><div class="politica-limite-label">Outros</div><input class="politica-limite-input" data-policy-field="${cat.id}.outros.limite" type="number" value="${config.outros?.limite ?? config.outros}"></div>
+                <div class="politica-limite-field"><div class="politica-limite-label">Almoço</div><input class="politica-limite-input" data-policy-field="${cat.id}.almoco.limite" type="number" value="${config.almoco.limite}"></div>
+                <div class="politica-limite-field"><div class="politica-limite-label">Jantar</div><input class="politica-limite-input" data-policy-field="${cat.id}.jantar.limite" type="number" value="${config.jantar.limite}"></div>
+                <div class="politica-limite-field"><div class="politica-limite-label">Outros</div><input class="politica-limite-input" data-policy-field="${cat.id}.outros.limite" type="number" value="${config.outros.limite}"></div>
               </div>
             </div>`;
         }
         return `
           <div class="politica-cat-row">
-            <div class="politica-cat-header"><div class="politica-cat-icon">${icon}</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
+            <div class="politica-cat-header"><div class="politica-cat-icon">•</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
             <div class="politica-limite-row single"><div class="politica-limite-field"><div class="politica-limite-label">Limite (R$)</div><input class="politica-limite-input" data-policy-field="${cat.id}.limite" type="number" value="${config.limite}"></div></div>
           </div>`;
       }).join('');
@@ -467,17 +451,19 @@ function renderAvatarPicker() {
     }
 
 function populatePoliticaSelect(selectedId) {
-      const select = byId('colab-politica');
-      if (!select) return;
+      const sel = byId('colab-politica');
+      if (!sel) return;
       const politicas = data()._politicas || [];
-      select.innerHTML = '<option value="">Padrão da empresa</option>' +
-        politicas.map(p => `<option value="${p.id}" ${String(p.id) === String(selectedId) ? 'selected' : ''}>${escapeHtml(p.nome)}</option>`).join('');
+      sel.innerHTML = '<option value="">Padrão da empresa</option>' +
+        politicas.map(function(p) {
+          return '<option value="' + p.id + '"' + (String(p.id) === String(selectedId) ? ' selected' : '') + '>' + escapeHtml(p.nome) + '</option>';
+        }).join('');
     }
 
 function resetColabForm() {
       byId('modal-colab-title').textContent = 'Cadastrar Colaborador';
       byId('colab-edit-id').value = '';
-      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-pix','colab-senha'].forEach((id) => { if(byId(id)) byId(id).value = ''; });
+      ['colab-nome','colab-dept','colab-email','colab-telefone','colab-cpf','colab-cargo','colab-cc','colab-pix','colab-senha'].forEach(function(id) { var el = byId(id); if(el) el.value = ''; });
       populatePoliticaSelect('');
       byId('colab-status').value = 'ativo';
       App.selectedAvatarColor = COLORS[0];
@@ -494,7 +480,7 @@ function fillColabForm(colab) {
       byId('colab-cpf').value = colab.cpf || '';
       byId('colab-cargo').value = colab.cargo || '';
       byId('colab-cc').value = colab.cc || '';
-      if(byId('colab-pix')) byId('colab-pix').value = colab.pix || '';
+      if (byId('colab-pix')) byId('colab-pix').value = colab.pix || '';
       populatePoliticaSelect(colab._politica_id || colab.politicaId || '');
       byId('colab-senha').value = '';
       byId('colab-status').value = colab.status || 'ativo';
@@ -511,6 +497,7 @@ function showColabDetail(id) {
         <div class="colab-detail-row"><div class="colab-detail-label">Telefone</div><div class="colab-detail-val">${escapeHtml(colab.telefone || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">CPF</div><div class="colab-detail-val">${escapeHtml(colab.cpf || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">Centro</div><div class="colab-detail-val">${escapeHtml(colab.cc || '—')}</div></div>
+        <div class="colab-detail-row"><div class="colab-detail-label">Chave Pix</div><div class="colab-detail-val">${escapeHtml(colab.pix || '—')}</div></div>
         <div class="colab-detail-row"><div class="colab-detail-label">Status</div><div class="colab-detail-val"><span class="colab-status-badge ${colab.status}">${escapeHtml(colab.status)}</span></div></div>`;
       byId('btn-editar-colab').dataset.id = String(colab.id);
       openModal('modal-colab-detalhe');
@@ -532,22 +519,17 @@ function groupByCategory(despesas) {
     }
 
 function renderUsuarios() {
-      const tbody = byId('usuarios-table');
+      var tbody = byId('usuarios-table');
       if (!tbody) return;
-      const usuarios = data()._usuarios || [];
+      var usuarios = data()._usuarios || [];
       if (!usuarios.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum usuário cadastrado. Clique em "Novo Usuário" para adicionar.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum usuário cadastrado.</td></tr>';
         return;
       }
-      const roleLabel = { gestor: 'Gestor', gerente: 'Gerente', colaborador: 'Colaborador' };
-      tbody.innerHTML = usuarios.map((u) => `
-        <tr>
-          <td><strong>${escapeHtml(u.nome)}</strong></td>
-          <td style="color:var(--text2)">${escapeHtml(u.email)}</td>
-          <td><span class="badge ${u.role === 'gestor' ? 'aprovado' : u.role === 'gerente' ? 'pendente' : ''}">${roleLabel[u.role] || u.role}</span></td>
-          <td><span class="colab-status-badge ${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'ativo' : 'inativo'}</span></td>
-          <td><button class="btn-ghost" style="padding:6px 14px;font-size:12px" data-action="editar-usuario" data-id="${u.id}">Editar</button></td>
-        </tr>`).join('');
+      var roleLabel = { gestor: 'Gestor', gerente: 'Gerente', colaborador: 'Colaborador' };
+      tbody.innerHTML = usuarios.map(function(u) {
+        return '<tr><td><strong>' + escapeHtml(u.nome) + '</strong></td><td style="color:var(--text2)">' + escapeHtml(u.email) + '</td><td><span class="badge ' + (u.role === 'gestor' ? 'aprovado' : u.role === 'gerente' ? 'pendente' : '') + '">' + (roleLabel[u.role] || u.role) + '</span></td><td><span class="colab-status-badge ' + (u.ativo ? 'ativo' : 'inativo') + '">' + (u.ativo ? 'ativo' : 'inativo') + '</span></td><td><button class="btn-ghost" style="padding:6px 14px;font-size:12px" data-action="editar-usuario" data-id="' + u.id + '">Editar</button></td></tr>';
+      }).join('');
     }
 
 function renderCurrentPage() {
@@ -569,8 +551,7 @@ function renderCurrentPage() {
 
 function renderAll() {
       renderChrome();
-      const _user = FluxoState.get()?.auth?.currentUser;
-      if (!_user) return;
+      if (!currentUser()) return;
       renderCurrentPage();
       renderAvatarPicker();
       hydrateFluxoModal();
@@ -587,7 +568,6 @@ function renderAll() {
     renderFluxos,
     renderLog,
     renderColaboradores,
-    renderUsuarios,
     renderPolitica,
     hydrateRelatorioSelects,
     hydrateFluxoModal,
@@ -596,8 +576,9 @@ function renderAll() {
     renderEnviarPrestResumo,
     renderAvatarPicker,
     resetColabForm,
-    populatePoliticaSelect,
     fillColabForm,
+    populatePoliticaSelect,
+    renderUsuarios,
     showColabDetail,
     statusBadge,
     groupByCategory,
