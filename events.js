@@ -42,6 +42,7 @@ export function bindEvents({
   resetUsuarioForm,
   preencherUsuarioForm,
   handleSaveUsuario,
+  handleSaveNovaPolitica,
 }) {
   document.addEventListener('click', async (event) => {
     const actionEl = event.target.closest('[data-action]');
@@ -91,6 +92,8 @@ export function bindEvents({
         break;
       }
       case 'salvar-politica': handleSavePolitica(); break;
+      case 'abrir-nova-politica': openModal('modal-nova-politica'); break;
+      case 'salvar-nova-politica': handleSaveNovaPolitica(); break;
       case 'toggle-politica': {
         const cat = actionEl.dataset.cat;
         const pol = FluxoState.get().data.politica;

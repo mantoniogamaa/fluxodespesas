@@ -54,8 +54,16 @@
     <div class="field-group"><div class="field-label">E-mail</div><input class="field-input" type="email" id="auth-email" value="" inputmode="email" autocomplete="email" placeholder="seu email"></div>
     <div class="field-group"><div class="field-label">Senha</div><input class="field-input" type="password" id="auth-pass" value="123456"></div>
     <button class="btn-primary" data-action="login">Entrar →</button>
-    <button class="btn-demo" id="btn-demo-toggle" onclick="window.toggleDemoMode()"></button>
-    <div class="auth-hint" id="auth-hint-text">Modo Supabase: use seu e-mail e senha cadastrados no Auth</div>
+    <div style="display:flex;align-items:center;gap:12px;margin:4px 0">
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+      <span style="font-size:12px;color:var(--text3);font-weight:500">ou</span>
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+    </div>
+    <button id="btn-demo-toggle" onclick="window.toggleDemoMode()" style="width:100%;padding:13px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.borderColor='var(--text3)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Ver demonstração
+    </button>
+    <div class="auth-hint" id="auth-hint-text" style="margin-top:8px">Gestor: demo.gestor@empresa / 12345</div>
   </div>
 </div>
 
@@ -317,6 +325,10 @@
               <div class="section-title" style="margin-bottom:3px">Política de Despesas</div>
               <div style="font-size:12px;color:var(--text2)">Defina limites por categoria — válidos para todos os colaboradores</div>
             </div>
+            <button class="btn-ghost" style="width:auto;padding:11px 20px;font-size:13px;margin-right:8px" data-action="abrir-nova-politica">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nova Política
+            </button>
             <button class="btn-primary" style="width:auto;padding:11px 22px;font-size:13px" data-action="salvar-politica">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               Salvar Política
@@ -353,6 +365,7 @@
       <div class="field-group"><div class="field-label">Valor do Crédito (R$)</div><input class="field-input" id="mv-valor" type="number" inputmode="decimal" placeholder="1000,00" data-input="preview-credito"></div>
       <div class="field-group"><div class="field-label">Data de Início</div><input class="field-input" id="mv-data" type="date"></div>
     </div>
+    <div class="field-group"><div class="field-label">Observação <span style="color:var(--text3);font-weight:400;text-transform:none">(opcional)</span></div><textarea class="field-input" id="mv-obs" rows="2" placeholder="Ex: visita a cliente, feira do setor..." style="resize:none;line-height:1.5"></textarea></div>
     <div id="mv-preview" style="display:none;background:rgba(79,124,255,.07);border:1px solid rgba(79,124,255,.2);border-radius:9px;padding:12px;margin-bottom:4px">
       <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">Resumo</div>
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="color:var(--text2)">Colaborador</span><span id="mv-prev-colab" style="font-weight:600">—</span></div>
@@ -436,14 +449,16 @@
 <!-- MODAL cadastro/editar colaborador -->
 <!-- PÁGINA USUÁRIOS -->
 <div class="page" id="page-usuarios">
-  <div class="card">
-    <div class="table-header">
-      <div class="section-title">Usuários do Sistema</div>
+  <div class="card" style="margin-bottom:18px;background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(139,92,246,.04));border-color:rgba(59,130,246,.18)">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+      <div><div class="section-title" style="margin-bottom:3px">Usuários do Sistema</div><div style="font-size:12px;color:var(--text2)">Gerencie os perfis de acesso</div></div>
       <button class="btn-primary" style="width:auto;padding:11px 22px;font-size:13px" data-action="abrir-novo-usuario">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         Novo Usuário
       </button>
     </div>
+  </div>
+  <div class="card">
     <div class="table-scroll">
       <table>
         <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
@@ -472,6 +487,7 @@
           <select class="field-input" id="usuario-role">
             <option value="gestor">Gestor — acesso total</option>
             <option value="gerente">Gerente — aprova seu departamento</option>
+            <option value="colaborador">Colaborador — apenas suas despesas</option>
           </select>
         </div>
       </div>

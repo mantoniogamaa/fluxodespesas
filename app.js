@@ -153,6 +153,7 @@ export async function initApp() {
     updateFilePreview: uiApi.updateFilePreview,
     getColab: context.getColab,
     handleSaveUsuario: actions.handleSaveUsuario,
+    handleSaveNovaPolitica: actions.handleSaveNovaPolitica,
     resetUsuarioForm: actions.resetUsuarioForm,
     preencherUsuarioForm: actions.preencherUsuarioForm,
     renderUsuarios: renderers.renderUsuarios,

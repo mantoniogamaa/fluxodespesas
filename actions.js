@@ -299,6 +299,34 @@ function preencherUsuarioForm(id) {
       if(byId('usuario-status')) byId('usuario-status').value = String(u.ativo !== false);
     }
 
+  function handleSaveNovaPolitica() {
+    const nome = byId('np-nome')?.value?.trim();
+    if (!nome) return showToast('Informe o nome da política', 'error');
+    const limites = {
+      alimentacao: { ativo: true, almoco: Number(byId('np-alimentacao')?.value || 55), jantar: Number(byId('np-alimentacao')?.value || 55), outros: Number(byId('np-alimentacao')?.value || 40) },
+      hospedagem:  { ativo: true, limite: Number(byId('np-hospedagem')?.value || 250) },
+      combustivel: { ativo: true, limite: Number(byId('np-combustivel')?.value || 200) },
+      uber:        { ativo: true, limite: Number(byId('np-uber')?.value || 80) },
+      transporte:  { ativo: true, limite: Number(byId('np-transporte')?.value || 120) },
+      passagem:    { ativo: true, limite: Number(byId('np-passagem')?.value || 800) },
+      pedagio:     { ativo: true, limite: Number(byId('np-pedagio')?.value || 50) },
+      material:    { ativo: false, limite: Number(byId('np-material')?.value || 300) },
+      estacion:    { ativo: true, limite: 80 },
+      outros:      { ativo: false, limite: 100 },
+    };
+    const politicas = data()._politicas || [];
+    if (politicas.find(p => p.nome.toLowerCase() === nome.toLowerCase())) {
+      return showToast('Já existe uma política com este nome', 'error');
+    }
+    const nova = { id: Date.now(), nome, limites, ativo: true };
+    FluxoState.hydrateRemote({ data: { _politicas: [...politicas, nova] } });
+    FluxoState.save();
+    closeModal('modal-nova-politica');
+    ['np-nome','np-alimentacao','np-hospedagem','np-combustivel','np-uber','np-transporte','np-passagem','np-pedagio','np-material','np-obs'].forEach(id => { const el = byId(id); if(el) el.value = ''; });
+    showToast('Política "' + nome + '" criada com sucesso!', 'success');
+    renderAll();
+  }
+
   return {
     handleLogin,
     handleSaveUsuario,
@@ -316,5 +344,6 @@ function preencherUsuarioForm(id) {
     openEditExpense,
     openPrestModal,
     verifyPolicy,
+    handleSaveNovaPolitica,
   };
 }
