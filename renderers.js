@@ -25,12 +25,12 @@ export function createRenderers({
   openModal,
 }) {
 
-function __isGestor() {
+function _isGestor() {
       const auth = FluxoState.get()?.auth || {};
       return auth.currentRole === 'gestor' || auth.currentUser?.role === 'gestor';
     }
 
-    function __currentUser() {
+    function _currentUser() {
       return FluxoState.get()?.auth?.currentUser || null;
     }
 
