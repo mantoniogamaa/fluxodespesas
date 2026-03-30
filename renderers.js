@@ -62,7 +62,11 @@ function __isGestor() {
         const active = item.dataset.page === App.currentPage;
         item.classList.toggle('active', active);
       });
-      qsa('.page').forEach((pageEl) => pageEl.classList.toggle('active', pageEl.id === `page-${App.currentPage}`));
+      console.log('[renderChrome] App.currentPage =', App.currentPage);
+      qsa('.page').forEach((pageEl) => {
+        const shouldBeActive = pageEl.id === `page-${App.currentPage}`;
+        pageEl.classList.toggle('active', shouldBeActive);
+      });
 
       const saldo = user.colabId ? availableSaldo(user.colabId) : 0;
       const showSaldo = !gestor && user.colabId;
