@@ -130,7 +130,6 @@ export async function initApp() {
     resetColabForm: renderers.resetColabForm,
     fillColabForm: renderers.fillColabForm,
     showColabDetail: renderers.showColabDetail,
-    renderUsuarios: renderers.renderUsuarios,
     setRole: uiApi.setRole,
     handleLogin: actions.handleLogin,
     handleLogout: actions.handleLogout,
@@ -147,9 +146,6 @@ export async function initApp() {
     verifyPolicy: actions.verifyPolicy,
     updateFilePreview: uiApi.updateFilePreview,
     getColab: context.getColab,
-    handleSaveUsuario: actions.handleSaveUsuario,
-    resetUsuarioForm: actions.resetUsuarioForm,
-    preencherUsuarioForm: actions.preencherUsuarioForm,
   });
 
   const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();
@@ -168,10 +164,14 @@ export async function initApp() {
         const mapped = mapCloudIdentity(profile, sessionUser);
         cloudContext.userId = mapped.userId;
         cloudContext.workspaceId = mapped.workspaceId;
-        FluxoState.setAuth({ currentRole: mapped.role, currentUser: mapped });
-        // Carrega estado completo das tabelas relacionais
+        // Carrega estado completo das tabelas relacionais ANTES de setar o auth
+        // para evitar que hydrateRemote sobrescreva o currentUser
         const remoteState = await loadFullState();
         if (remoteState) FluxoState.hydrateRemote(remoteState);
+        // Seta auth DEPOIS do hydrate para não ser sobrescrito
+        FluxoState.setAuth({ currentRole: mapped.role, currentUser: mapped });
+        cloudContext.userId = mapped.userId;
+        cloudContext.workspaceId = mapped.workspaceId;
         // Carrega rascunho do usuário
         const remoteDraft = await loadRascunho(sessionUser.id);
         if (Array.isArray(remoteDraft) && remoteDraft.length) FluxoState.setRemoteDraft(remoteDraft);
