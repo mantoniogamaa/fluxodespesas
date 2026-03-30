@@ -93,7 +93,7 @@ export async function initApp() {
     closeModal: uiApi.closeModal,
     openModal: uiApi.openModal,
     persist: uiApi.persist,
-    renderAll: renderers.renderAll,
+    renderAll: safeRenderAll,
     renderPrestacao: renderers.renderPrestacao,
     renderCategoriaChips: renderers.renderCategoriaChips,
     renderEnviarPrestResumo: renderers.renderEnviarPrestResumo,
@@ -104,6 +104,12 @@ export async function initApp() {
     fillColabForm: renderers.fillColabForm,
     closeSidebar: uiApi.closeSidebar,
   });
+
+  // safeRenderAll: verifica estado antes de renderizar (resolve problema de closure com Supabase)
+  const safeRenderAll = () => {
+    if (!FluxoState.get()?.auth?.currentUser) return;
+    renderers.renderAll();
+  };
 
   bindEvents({
     App: context.App,
@@ -119,7 +125,7 @@ export async function initApp() {
     openModal: uiApi.openModal,
     persist: uiApi.persist,
     exportHistoricoCsv: uiApi.exportHistoricoCsv,
-    renderAll: renderers.renderAll,
+    renderAll: safeRenderAll,
     renderPrestacao: renderers.renderPrestacao,
     renderCurrentPage: renderers.renderCurrentPage,
     renderCategoriaChips: renderers.renderCategoriaChips,
@@ -193,13 +199,6 @@ export async function initApp() {
     cloudContext.userId = user?.userId || null;
     cloudContext.workspaceId = user?.workspaceId || cloudContext.workspaceId || null;
   });
-  // Substituir renderAll do FluxoApp por versão que garante estado atual
-  const safeRenderAll = () => {
-    const authNow = FluxoState.get()?.auth;
-    if (!authNow?.currentUser && !authNow?.currentRole) return;
-    renderers.renderAll();
-  };
-
   safeRenderAll();
   window.FluxoApp = Object.freeze({
     renderAll: safeRenderAll,
