@@ -146,6 +146,10 @@ export async function initApp() {
     verifyPolicy: actions.verifyPolicy,
     updateFilePreview: uiApi.updateFilePreview,
     getColab: context.getColab,
+    handleSaveUsuario: actions.handleSaveUsuario,
+    resetUsuarioForm: actions.resetUsuarioForm,
+    preencherUsuarioForm: actions.preencherUsuarioForm,
+    renderUsuarios: renderers.renderUsuarios,
   });
 
   const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();
@@ -177,6 +181,8 @@ export async function initApp() {
         if (Array.isArray(remoteDraft) && remoteDraft.length) FluxoState.setRemoteDraft(remoteDraft);
         // Força renderAll após carregar tudo para garantir estado atualizado na UI
         renderers.renderAll();
+        // Forçar navegação para dashboard após login
+        context.App.currentPage = 'dashboard';
       }
     } catch (error) {
       console.error('Supabase session bootstrap error', error);
@@ -187,9 +193,16 @@ export async function initApp() {
     cloudContext.userId = user?.userId || null;
     cloudContext.workspaceId = user?.workspaceId || cloudContext.workspaceId || null;
   });
-  renderers.renderAll();
+  // Substituir renderAll do FluxoApp por versão que garante estado atual
+  const safeRenderAll = () => {
+    const authNow = FluxoState.get()?.auth;
+    if (!authNow?.currentUser && !authNow?.currentRole) return;
+    renderers.renderAll();
+  };
+
+  safeRenderAll();
   window.FluxoApp = Object.freeze({
-    renderAll: renderers.renderAll,
+    renderAll: safeRenderAll,
     state: context.state,
     data: context.data,
     ui: context.ui,

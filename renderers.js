@@ -551,7 +551,8 @@ function renderCurrentPage() {
 
 function renderAll() {
       renderChrome();
-      if (!currentUser()) return;
+      // Guard: só renderiza se tiver usuário autenticado (renderChrome já cuida da tela de login)
+      if (!FluxoState.get()?.auth?.currentUser) return;
       renderCurrentPage();
       renderAvatarPicker();
       hydrateFluxoModal();
