@@ -25,9 +25,20 @@ export function createRenderers({
   openModal,
 }) {
 
-function renderChrome() {
-      const user = currentUser();
-      const gestor = isGestor();
+function __isGestor() {
+      const auth = FluxoState.get()?.auth || {};
+      return auth.currentRole === 'gestor' || auth.currentUser?.role === 'gestor';
+    }
+
+    function __currentUser() {
+      return FluxoState.get()?.auth?.currentUser || null;
+    }
+
+    function renderChrome() {
+      // Lê direto do FluxoState para garantir estado atual (evita problema de closure)
+      const _auth = FluxoState.get()?.auth || {};
+      const user = _auth.currentUser || null;
+      const gestor = _auth.currentRole === 'gestor' || user?.role === 'gestor';
       byId('auth-screen').style.display = user ? 'none' : 'flex';
       byId('app').style.display = user ? 'block' : 'none';
       if (!user) return;
@@ -106,8 +117,8 @@ function renderDashboard() {
       drawBarChart(byId('chart-cat'), grouped);
 
       const alert = byId('alert-saldo');
-      if (!isGestor() && currentUser()?.colabId) {
-        const saldo = availableSaldo(currentUser().colabId);
+      if (!_isGestor() && _currentUser()?.colabId) {
+        const saldo = availableSaldo(_currentUser().colabId);
         const show = saldo < 300;
         alert.classList.toggle('show', show);
         byId('alert-saldo-txt').textContent = show ? `Seu saldo disponível está em ${currency(saldo)}. Revise a necessidade de novo crédito.` : '';
@@ -117,7 +128,7 @@ function renderDashboard() {
     }
 
 function renderExtrato() {
-      const user = currentUser();
+      const user = _currentUser();
       const fluxos = data().verbas.filter((item) => scopeFilter(item.colabId));
       const cards = fluxos.map((item) => {
         const colab = getColab(item.colabId);
@@ -138,7 +149,7 @@ function renderExtrato() {
       byId('extrato-content').innerHTML = `
         <div class="card" style="margin-bottom:14px">
           <div class="section-title" style="margin-bottom:6px">Resumo do extrato</div>
-          <div class="page-subtitle">${isGestor() ? 'Visão consolidada de todos os colaboradores' : `Visão individual de ${escapeHtml(user?.name || '')}`}</div>
+          <div class="page-subtitle">${_isGestor() ? 'Visão consolidada de todos os colaboradores' : `Visão individual de ${escapeHtml(user?.name || '')}`}</div>
         </div>
         ${cards || '<div class="card"><div class="empty-state"><div class="empty-text">Nenhum fluxo disponível.</div></div></div>'}`;
     }
@@ -168,7 +179,7 @@ function renderHistorico() {
         .filter((item) => !fBusca || [item.estab, item.obs, categoryLabel(item.cat), getColab(item.colabId)?.nome || ''].join(' ').toLowerCase().includes(fBusca))
         .sort((a, b) => String(b.data).localeCompare(String(a.data)));
 
-      byId('hist-action-col').textContent = isGestor() ? 'Ações' : '';
+      byId('hist-action-col').textContent = _isGestor() ? 'Ações' : '';
       byId('hist-table').innerHTML = despesas.map((item) => historicoRow(item)).join('') || `<tr><td colspan="8"><div class="empty-state"><div class="empty-text">Nenhuma despesa encontrada.</div></div></td></tr>`;
       byId('hist-cards').innerHTML = despesas.map((item) => historicoCard(item)).join('');
       byId('hist-total-row').textContent = `Total filtrado: ${currency(sum(despesas, (item) => item.valor))}`;
@@ -186,7 +197,7 @@ function historicoRow(item) {
           <td>${currency(item.valor)}</td>
           <td>${escapeHtml(fluxo?.motivo || '—')}</td>
           <td>${statusBadge(item.status)}</td>
-          <td>${isGestor() ? historicoActions(item) : ''}</td>
+          <td>${_isGestor() ? historicoActions(item) : ''}</td>
         </tr>`;
     }
 
@@ -196,12 +207,12 @@ function historicoCard(item) {
         <div class="exp-card">
           <div class="exp-card-top"><div><div class="exp-card-estab">${escapeHtml(item.estab)}</div><div class="exp-card-meta">${escapeHtml(colab?.nome || '—')} · ${dateBr(item.data)}</div></div><div class="exp-card-valor">${currency(item.valor)}</div></div>
           <div class="exp-card-meta"><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span>${statusBadge(item.status)}</div>
-          ${isGestor() ? `<div class="exp-card-actions">${historicoActions(item)}</div>` : ''}
+          ${_isGestor() ? `<div class="exp-card-actions">${historicoActions(item)}</div>` : ''}
         </div>`;
     }
 
 function historicoActions(item) {
-      if (!isGestor()) return '';
+      if (!_isGestor()) return '';
       const actions = [];
       if (item.status === 'Pendente') {
         actions.push(`<button class="btn-sm green" data-action="aprovar-despesa" data-id="${item.id}">Aprovar</button>`);
@@ -334,7 +345,7 @@ function renderFluxos() {
     }
 
 function renderLog() {
-      const logs = isGestor() ? data().logAcoes : data().logAcoes.filter((item) => item.texto.toLowerCase().includes((currentUser()?.name || '').toLowerCase()));
+      const logs = _isGestor() ? data().logAcoes : data().logAcoes.filter((item) => item.texto.toLowerCase().includes((_currentUser()?.name || '').toLowerCase()));
       byId('log-count').textContent = `${logs.length} registros`;
       byId('log-list').innerHTML = logs.map((item) => `
         <div class="log-item">
@@ -555,7 +566,8 @@ function renderCurrentPage() {
 
 function renderAll() {
       renderChrome();
-      if (!currentUser()) return;
+      const _user = FluxoState.get()?.auth?.currentUser;
+      if (!_user) return;
       renderCurrentPage();
       renderAvatarPicker();
       hydrateFluxoModal();
