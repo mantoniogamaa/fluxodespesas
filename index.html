@@ -663,8 +663,9 @@
     const banner = document.getElementById('demo-banner');
     const btn = document.getElementById('btn-demo-toggle');
     if (banner) banner.style.display = demo ? 'flex' : 'none';
-    if (btn) btn.textContent = demo ? '✕ Desativar demonstração' : '▶ Ver demonstração';
-    if (btn) btn.classList.toggle('btn-demo-active', demo);
+    if (btn) btn.innerHTML = demo
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Desativar demonstração'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Ver demonstração';
   }
 
   document.addEventListener('DOMContentLoaded', updateDemoUI);
