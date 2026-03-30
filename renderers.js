@@ -26,8 +26,10 @@ export function createRenderers({
 }) {
 
 function renderChrome() {
-      const user = currentUser();
-      const gestor = isGestor();
+      // Lê auth diretamente do estado para evitar problema de closure
+      const authState = FluxoState.get()?.auth;
+      const user = authState?.currentUser || currentUser();
+      const gestor = (authState?.currentRole === 'gestor') || isGestor();
       byId('auth-screen').style.display = user ? 'none' : 'flex';
       byId('app').style.display = user ? 'block' : 'none';
       if (!user) return;
