@@ -83,22 +83,36 @@ function renderDashboard() {
       const latest = [...despesas].sort((a, b) => String(b.data).localeCompare(String(a.data))).slice(0, 5);
       byId('dash-table').innerHTML = latest.map((item) => {
         const colab = getColab(item.colabId);
+        const ini = getInitials(colab?.nome || '?');
+        const col = colab?.color || '#4F7CFF';
         return `
           <tr>
-            <td>${escapeHtml(colab?.nome || '—')}</td>
-            <td>${escapeHtml(item.estab)}</td>
-            <td><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span></td>
-            <td>${currency(item.valor)}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
+                <div><div style="font-weight:600;font-size:13px;color:var(--text)">${escapeHtml(item.estab)}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${escapeHtml(colab?.nome || '—')} · ${escapeHtml(categoryLabel(item.cat))}</div></div>
+              </div>
+            </td>
+            <td style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;text-align:right">${currency(item.valor)}</td>
             <td>${statusBadge(item.status)}</td>
           </tr>`;
-      }).join('') || `<tr><td colspan="5"><div class="empty-state"><div class="empty-text">Sem despesas recentes.</div></div></td></tr>`;
+      }).join('') || `<tr><td colspan="3"><div class="empty-state"><div class="empty-text">Sem despesas recentes.</div></div></td></tr>`;
 
       byId('dash-cards').innerHTML = latest.map((item) => {
         const colab = getColab(item.colabId);
+        const ini = getInitials(colab?.nome || '?');
+        const col = colab?.color || '#4F7CFF';
         return `
-          <div class="exp-card">
-            <div class="exp-card-top"><div><div class="exp-card-estab">${escapeHtml(item.estab)}</div><div class="exp-card-meta">${escapeHtml(colab?.nome || '—')} · ${dateBr(item.data)}</div></div><div class="exp-card-valor">${currency(item.valor)}</div></div>
-            <div class="exp-card-meta"><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span>${statusBadge(item.status)}</div>
+          <div class="exp-card" style="display:flex;align-items:center;gap:12px;padding:14px 16px">
+            <div style="width:38px;height:38px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:13px;color:var(--text)">${escapeHtml(item.estab)}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${escapeHtml(colab?.nome || '—')} · ${escapeHtml(categoryLabel(item.cat))}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px">${currency(item.valor)}</div>
+              <div style="margin-top:4px">${statusBadge(item.status)}</div>
+            </div>
           </div>`;
       }).join('');
 
@@ -123,24 +137,28 @@ function renderExtrato() {
         const colab = getColab(item.colabId);
         const saldo = Math.max(Number(item.total) - Number(item.usado), 0);
         const pct = item.total ? Math.round((Number(item.usado) / Number(item.total)) * 100) : 0;
+        const ini = getInitials(colab?.nome || '?');
+        const col = colab?.color || '#4F7CFF';
         return `
-          <div class="card" style="margin-bottom:12px">
-            <div class="table-header"><div><div class="section-title">${escapeHtml(item.motivo)}</div><div class="page-subtitle">${escapeHtml(colab?.nome || '—')} · ${dateBr(item.dataInicio)}</div></div><div class="badge ${saldo > 0 ? 'aprovado' : 'rejeitado'}">${saldo > 0 ? 'Ativo' : 'Encerrado'}</div></div>
-            <div class="grid-3">
-              <div><div class="field-label">Crédito</div><div class="stat-value" style="font-size:18px">${currency(item.total)}</div></div>
-              <div><div class="field-label">Utilizado</div><div class="stat-value" style="font-size:18px">${currency(item.usado)}</div></div>
-              <div><div class="field-label">Saldo</div><div class="stat-value" style="font-size:18px">${currency(saldo)}</div></div>
+          <div class="card" style="padding:20px">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+              <div style="width:44px;height:44px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
+              <div>
+                <div style="font-weight:700;font-size:15px;color:var(--text)">${escapeHtml(colab?.nome || '—')}</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:1px">${escapeHtml(item.motivo)}</div>
+              </div>
             </div>
-            <div style="margin-top:12px"><div class="progress-bar"><div class="progress-fill ${pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green'}" style="width:${pct}%"></div></div><div class="progress-labels"><span>uso do crédito</span><span>${pct}%</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text2)">Crédito</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px">${currency(item.total)}</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text2)">Utilizado</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;color:var(--accent)">${currency(item.usado)}</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text2)">Saldo</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;color:var(--green)">${currency(saldo)}</span></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill ${pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green'}" style="width:${pct}%"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text3)"><span>${pct}% utilizado</span><span>${currency(saldo)} restante</span></div>
           </div>`;
       }).join('');
 
-      byId('extrato-content').innerHTML = `
-        <div class="card" style="margin-bottom:14px">
-          <div class="section-title" style="margin-bottom:6px">Resumo do extrato</div>
-          <div class="page-subtitle">${isGestor() ? 'Visão consolidada de todos os colaboradores' : `Visão individual de ${escapeHtml(user?.name || '')}`}</div>
-        </div>
-        ${cards || '<div class="card"><div class="empty-state"><div class="empty-text">Nenhum fluxo disponível.</div></div></div>'}`;
+      byId('extrato-content').innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">' + (cards || '<div class="card"><div class="empty-state"><div class="empty-text">Nenhum fluxo disponível.</div></div></div>') + '</div>';
     }
 
 function ensureHistoricoFilters() {
@@ -176,17 +194,22 @@ function renderHistorico() {
 
 function historicoRow(item) {
       const colab = getColab(item.colabId);
-      const fluxo = getFluxo(item.verbaid);
+      const ini = getInitials(colab?.nome || '?');
+      const col = colab?.color || '#4F7CFF';
       return `
         <tr>
-          <td>${dateBr(item.data)}</td>
-          <td>${escapeHtml(colab?.nome || '—')}</td>
-          <td>${escapeHtml(item.estab)}</td>
-          <td><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span></td>
-          <td>${currency(item.valor)}</td>
-          <td>${escapeHtml(fluxo?.motivo || '—')}</td>
+          <td style="color:var(--text2);font-size:13px">${dateBr(item.data)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:30px;height:30px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
+              <span style="font-weight:500;font-size:13px">${escapeHtml(colab?.nome || '—')}</span>
+            </div>
+          </td>
+          <td style="font-weight:500;font-size:13px">${escapeHtml(item.estab)}</td>
+          <td style="color:var(--text2);font-size:13px">${escapeHtml(categoryLabel(item.cat))}</td>
+          <td style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px">${currency(item.valor)}</td>
           <td>${statusBadge(item.status)}</td>
-          <td>${isGestor() ? historicoActions(item) : ''}</td>
+          <td>${isGestor() ? historicoActionsNew(item) : ''}</td>
         </tr>`;
     }
 
@@ -209,6 +232,15 @@ function historicoActions(item) {
         actions.push(`<button class="btn-sm" data-action="rejeitar-despesa" data-id="${item.id}">Rejeitar</button>`);
       }
       return actions.join(' ');
+    }
+
+    function historicoActionsNew(item) {
+      if (!isGestor()) return '';
+      if (item.status !== 'Pendente') return '';
+      return `<div style="display:flex;gap:6px;align-items:center">
+        <button title="Aprovar" style="width:28px;height:28px;border-radius:6px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" data-action="aprovar-despesa" data-id="${item.id}">✓</button>
+        <button title="Rejeitar" style="width:28px;height:28px;border-radius:6px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" data-action="rejeitar-despesa" data-id="${item.id}">✕</button>
+      </div>`;
     }
 
 function renderPrestacao() {

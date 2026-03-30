@@ -54,6 +54,22 @@ export function bindEvents({
       case 'open-sidebar': openSidebar(); break;
       case 'close-sidebar': closeSidebar(); break;
       case 'go-page': App.currentPage = actionEl.dataset.page; closeSidebar(); renderAll(); break;
+      case 'hist-filter': {
+        const val = actionEl.dataset.value;
+        // Atualizar pills visuais
+        document.querySelectorAll('.hist-pill').forEach(p => {
+          const isActive = p.dataset.value === val;
+          p.style.background = isActive ? 'var(--accent)' : 'transparent';
+          p.style.color = isActive ? '#fff' : 'var(--text2)';
+          p.style.borderColor = isActive ? 'var(--accent)' : 'var(--border2)';
+          p.style.fontWeight = isActive ? '600' : '500';
+        });
+        // Sincronizar com o select hidden
+        const sel = byId('f-status');
+        if (sel) { sel.value = val; }
+        renderAll();
+        break;
+      }
       case 'open-nova-fluxo': hydrateFluxoModal(); openModal('modal-verba'); break;
       case 'close-modal': closeModal(actionEl.dataset.modalId); break;
       case 'add-item-prest': handleAddPrestItem(); break;

@@ -139,15 +139,35 @@
       <div class="page active" id="page-dashboard">
         <div class="alert-banner" id="alert-saldo"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span id="alert-saldo-txt"></span></div>
         <div class="grid-4">
-          <div class="card stat-card blue"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div class="stat-value" id="s-total">—</div><div class="stat-label">Total em Fluxos</div><div class="stat-change up" id="s-total-s"></div></div>
-          <div class="card stat-card purple"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-value" id="s-usado">—</div><div class="stat-label">Total Utilizado</div><div class="stat-change" style="color:var(--text3)" id="s-usado-s"></div></div>
-          <div class="card stat-card green"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="stat-value" id="s-notas">—</div><div class="stat-label">Notas Fiscais</div><div class="stat-change up" id="s-notas-s"></div></div>
-          <div class="card stat-card yellow"><div class="stat-glow"></div><div class="stat-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-value" id="s-pend">—</div><div class="stat-label">Pendentes</div><div class="stat-change down" id="s-pend-s"></div></div>
+          <div class="card stat-card blue" style="position:relative;overflow:hidden;padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div><div class="stat-label" style="margin-bottom:8px">Total em Fluxos</div><div class="stat-value" id="s-total">—</div><div class="stat-change up" id="s-total-s" style="margin-top:6px"></div></div>
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            </div>
+          </div>
+          <div class="card stat-card purple" style="position:relative;overflow:hidden;padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div><div class="stat-label" style="margin-bottom:8px">Total Utilizado</div><div class="stat-value" id="s-usado">—</div><div class="stat-change" style="color:var(--text3);margin-top:6px" id="s-usado-s"></div></div>
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            </div>
+          </div>
+          <div class="card stat-card green" style="position:relative;overflow:hidden;padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div><div class="stat-label" style="margin-bottom:8px">Notas Fiscais</div><div class="stat-value" id="s-notas">—</div><div class="stat-change up" id="s-notas-s" style="margin-top:6px"></div></div>
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            </div>
+          </div>
+          <div class="card stat-card yellow" style="position:relative;overflow:hidden;padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div><div class="stat-label" style="margin-bottom:8px">Pendentes</div><div class="stat-value" id="s-pend">—</div><div class="stat-change down" id="s-pend-s" style="margin-top:6px"></div></div>
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            </div>
+          </div>
         </div>
         <div class="grid-2">
           <div class="card">
             <div class="table-header"><div class="section-title">Últimas Despesas</div></div>
-            <div class="table-scroll"><table><thead><tr><th>Colaborador</th><th>Estabelecimento</th><th>Categoria</th><th>Valor</th><th>Status</th></tr></thead><tbody id="dash-table"></tbody></table></div>
+            <div class="table-scroll"><table><thead><tr><th>Despesa</th><th style="text-align:right">Valor</th><th>Status</th></tr></thead><tbody id="dash-table"></tbody></table></div>
             <div class="expense-cards" id="dash-cards"></div>
           </div>
           <div class="card">
@@ -165,20 +185,26 @@
       <!-- HISTÓRICO -->
       <div class="page" id="page-historico">
         <div class="card">
-          <div class="table-header">
-            <div class="section-title">Histórico de Despesas</div>
+          <!-- Filtros pills + busca -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn-sm green" data-action="export-excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+              <button class="hist-pill active" data-action="hist-filter" data-value="" id="pill-todos" style="padding:7px 16px;border-radius:99px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s">Todos</button>
+              <button class="hist-pill" data-action="hist-filter" data-value="Aprovado" id="pill-aprovado" style="padding:7px 16px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s">Aprovado</button>
+              <button class="hist-pill" data-action="hist-filter" data-value="Pendente" id="pill-pendente" style="padding:7px 16px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s">Pendente</button>
+              <button class="hist-pill" data-action="hist-filter" data-value="Rejeitado" id="pill-rejeitado" style="padding:7px 16px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s">Rejeitado</button>
             </div>
+            <div style="flex:1;min-width:180px;position:relative">
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="filter-input" type="text" id="f-busca" data-input="render-historico" placeholder="Buscar por estabelecimento ou colaborador..." style="padding-left:36px;width:100%">
+            </div>
+            <!-- hidden selects para compatibilidade com renderHistorico -->
+            <select id="f-status" data-change="render-historico" style="display:none"><option value="">Todos</option><option value="Aprovado">Aprovado</option><option value="Pendente">Pendente</option><option value="Rejeitado">Rejeitado</option></select>
+            <select id="f-colab" data-change="render-historico" style="display:none"><option value="">Todos</option></select>
+            <input type="date" id="f-de" data-change="render-historico" style="display:none">
+            <input type="date" id="f-ate" data-change="render-historico" style="display:none">
+            <button class="btn-sm green" data-action="export-excel" style="margin-left:auto"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
           </div>
-          <div class="filter-row">
-            <select class="filter-input" id="f-status" data-change="render-historico"><option value="">Status: Todos</option><option value="Aprovado">Aprovado</option><option value="Pendente">Pendente</option><option value="Rejeitado">Rejeitado</option></select>
-            <select class="filter-input" id="f-colab" data-change="render-historico"><option value="">Colaborador: Todos</option></select>
-            <input class="filter-input" type="date" id="f-de" data-change="render-historico" placeholder="De">
-            <input class="filter-input" type="date" id="f-ate" data-change="render-historico" placeholder="Até">
-            <input class="filter-input" type="text" id="f-busca" data-input="render-historico" placeholder="Buscar...">
-          </div>
-          <div class="table-scroll"><table><thead><tr><th>Data</th><th>Colaborador</th><th>Estabelecimento</th><th>Categoria</th><th>Valor</th><th>Fluxo</th><th>Status</th><th id="hist-action-col"></th></tr></thead><tbody id="hist-table"></tbody></table></div>
+          <div class="table-scroll"><table><thead><tr><th>Data</th><th>Colaborador</th><th>Estabelecimento</th><th>Categoria</th><th>Valor</th><th>Status</th><th id="hist-action-col"></th></tr></thead><tbody id="hist-table"></tbody></table></div>
           <div class="expense-cards" id="hist-cards"></div>
           <div style="font-size:12px;color:var(--text3);margin-top:10px;text-align:right" id="hist-total-row"></div>
         </div>
@@ -412,16 +438,13 @@
 <div class="page" id="page-usuarios">
   <div class="card">
     <div class="table-header">
-      <div>
-        <div class="section-title">Usuários do Sistema</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px">Gerencie os acessos ao sistema</div>
-      </div>
+      <div class="section-title">Usuários do Sistema</div>
       <button class="btn-primary" style="width:auto;padding:11px 22px;font-size:13px" data-action="abrir-novo-usuario">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         Novo Usuário
       </button>
     </div>
-    <div class="table-scroll" style="margin-top:8px">
+    <div class="table-scroll">
       <table>
         <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
         <tbody id="usuarios-table"></tbody>
