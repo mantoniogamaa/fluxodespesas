@@ -18,15 +18,9 @@ export function createUi({
 function setRole(role) {
       FluxoBusiness.AuthService.setRole(role);
       qsa('.role-btn').forEach((button) => button.classList.toggle('active', button.dataset.role === role));
-      const hint = byId('auth-hint-text');
-      if (hint) {
-        hint.textContent = role === 'gestor'
-          ? 'Gestor: demo.gestor@empresa / 12345'
-          : 'Colaborador: demo.colaborador@empresa / 12345';
-      }
       const emailEl = byId('auth-email');
       if (emailEl) {
-        emailEl.placeholder = role === 'gestor' ? 'demo.gestor@empresa' : 'demo.colaborador@empresa';
+        emailEl.placeholder = 'seu email';
         emailEl.value = '';
       }
     }
