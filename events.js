@@ -169,6 +169,23 @@ export function bindEvents({
         break;
       }
       case 'limpar-rascunho': FluxoBusiness.PrestacaoService.saveDraft([]); FluxoState.setUi({ itensPrest: [], rascunhoOffline: [] }); persist(); showToast('Rascunho limpo'); break;
+      case 'ver-reembolsos': {
+        App.currentPage = 'historico';
+        closeSidebar();
+        const busca = byId('f-busca');
+        if (busca) busca.value = 'Reembolso';
+        const sel = byId('f-status');
+        if (sel) sel.value = 'Pendente';
+        document.querySelectorAll('.hist-pill').forEach(p => {
+          const isP = p.dataset.value === 'Pendente';
+          p.style.background = isP ? 'var(--accent)' : 'transparent';
+          p.style.color = isP ? '#fff' : 'var(--text2)';
+          p.style.borderColor = isP ? 'var(--accent)' : 'var(--border2)';
+          p.style.fontWeight = isP ? '600' : '500';
+        });
+        renderAll();
+        break;
+      }
       case 'export-excel': exportHistoricoCsv(); break;
       case 'gerar-pdf': window.print(); break;
       default: break;

@@ -409,6 +409,7 @@ tr:hover td{background:var(--surface3);}
 .badge.hospedagem{background:var(--green-dim);color:var(--green);border:1px solid rgba(52,199,89,.16);}
 .badge.combustivel,.badge.estacion,.badge.pedagio{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(255,149,0,.16);}
 .badge.material,.badge.outros{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,59,48,.16);}
+.badge.reembolso{background:rgba(14,165,233,.09);color:#0284C7;border:1px solid rgba(14,165,233,.22);font-weight:700;}
 
 /* expense cards mobile */
 .expense-cards{display:none;flex-direction:column;gap:10px;}
@@ -1041,9 +1042,28 @@ option{background:#FFFFFF;}
 ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
 
 /* ── Nav item active — indicador premium ── */
-.nav-item.active {
-  font-weight:600;
+.nav-item.active { font-weight:600; }
+
+/* ── Linha de reembolso no histórico ── */
+tr.reembolso-row td { background:rgba(14,165,233,.03); }
+tr.reembolso-row:hover td { background:rgba(14,165,233,.06); }
+
+/* ── Sidebar collapsed — mostrar só ícones ── */
+.sidebar.collapsed .nav-item {
+  font-size:0;       /* oculta texto sem mexer no HTML */
+  justify-content:center;
+  padding:10px 0;
+  gap:0;
 }
+.sidebar.collapsed .nav-item .nav-icon {
+  font-size:14px;    /* restaura tamanho para o ícone SVG */
+  width:20px;height:20px;
+  margin:0;
+}
+.sidebar.collapsed .nav-item.active::before { display:none; }
+.sidebar.collapsed .sidebar-user { justify-content:center; padding:12px; }
+.sidebar.collapsed .logo-mark { justify-content:center; }
+.sidebar.collapsed .sidebar-collapse-btn { margin-left:0; }
 
 /* ── Politica toggle premium ── */
 .politica-toggle { box-shadow:inset 0 1px 3px rgba(0,0,0,.08); }

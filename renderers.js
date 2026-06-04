@@ -9,6 +9,7 @@ const CAT_ICONS = {
   pedagio:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>`,
   material:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>`,
   outros:      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
+  reembolso:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M12 14h.01"/></svg>`,
 };
 
 export function createRenderers({
@@ -133,6 +134,19 @@ function renderDashboard() {
       const grouped = groupByCategory(despesas);
       drawBarChart(byId('chart-cat'), grouped);
 
+      // Alerta de reembolsos pendentes para o gestor
+      const reembPend = despesas.filter(d => d.cat === 'reembolso' && d.status === 'Pendente');
+      const alertReem = byId('alert-reembolso');
+      if (alertReem) {
+        const showReem = isGestor() && reembPend.length > 0;
+        alertReem.style.display = showReem ? 'flex' : 'none';
+        if (showReem) {
+          const totalReem = sum(reembPend, i => i.valor);
+          const sub = byId('alert-reembolso-sub');
+          if (sub) sub.textContent = `${reembPend.length} solicitaç${reembPend.length === 1 ? 'ão' : 'ões'} · Total: ${currency(totalReem)}`;
+        }
+      }
+
       const alert = byId('alert-saldo');
       if (!isGestor() && currentUser()?.colabId) {
         const saldo = availableSaldo(currentUser().colabId);
@@ -210,8 +224,9 @@ function historicoRow(item) {
       const colab = getColab(item.colabId);
       const ini = getInitials(colab?.nome || '?');
       const col = colab?.color || '#4F7CFF';
+      const isReem = item.cat === 'reembolso';
       return `
-        <tr>
+        <tr class="${isReem ? 'reembolso-row' : ''}">
           <td style="color:var(--text2);font-size:13px">${dateBr(item.data)}</td>
           <td>
             <div style="display:flex;align-items:center;gap:8px">
@@ -220,7 +235,7 @@ function historicoRow(item) {
             </div>
           </td>
           <td style="font-weight:500;font-size:13px">${escapeHtml(item.estab)}</td>
-          <td style="color:var(--text2);font-size:13px">${escapeHtml(categoryLabel(item.cat))}</td>
+          <td><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span></td>
           <td style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px">${currency(item.valor)}</td>
           <td>${statusBadge(item.status)}</td>
           <td>${isGestor() ? historicoActionsNew(item) : ''}</td>
@@ -408,7 +423,7 @@ function renderColaboradores() {
 function renderPolitica() {
       const pol = data().politica || DEFAULT_POLICY;
       byId('politica-content').innerHTML = CATEGORIES.map((cat) => {
-        const config = pol[cat.id];
+        const config = pol[cat.id] || DEFAULT_POLICY[cat.id];
         if (!config) return '';
         var icon = CAT_ICONS[cat.id] || CAT_ICONS.outros;
         if (cat.id === 'alimentacao') {

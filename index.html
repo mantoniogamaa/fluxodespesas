@@ -165,6 +165,20 @@
             </div>
           </div>
         </div>
+        <!-- Alerta de reembolsos pendentes (visível apenas para o gestor) -->
+        <div id="alert-reembolso" style="display:none;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(14,165,233,.07),rgba(14,165,233,.03));border:1px solid rgba(14,165,233,.22);border-radius:var(--radius);padding:16px 20px;margin-bottom:18px">
+          <div style="width:42px;height:42px;border-radius:11px;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#0284C7">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M7 15h2M11 15h4"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;color:var(--text)">Reembolsos aguardando aprovação</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px" id="alert-reembolso-sub"></div>
+          </div>
+          <button class="btn-sm" data-action="ver-reembolsos" style="border-color:rgba(14,165,233,.35);color:#0284C7;white-space:nowrap;display:flex;align-items:center;gap:5px">
+            Ver todos <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+        </div>
+
         <div class="grid-2">
           <div class="card">
             <div class="table-header"><div class="section-title">Últimas Despesas</div></div>
@@ -467,7 +481,7 @@
       <div class="field-group"><div class="field-label">Valor (R$)</div><input class="field-input" id="edit-valor" type="number" inputmode="decimal"></div>
       <div class="field-group"><div class="field-label">Data</div><input class="field-input" id="edit-data" type="date"></div>
     </div>
-    <div class="field-group"><div class="field-label">Categoria</div><div class="select-wrapper"><select class="field-input" id="edit-cat"><option>Alimentação</option><option>Transporte</option><option>Hospedagem</option><option>Combustível</option><option>Estacionamento</option><option>Uber / Taxi</option><option>Passagem</option><option>Pedágio</option><option>Material</option><option>Outros</option></select></div></div>
+    <div class="field-group"><div class="field-label">Categoria</div><div class="select-wrapper"><select class="field-input" id="edit-cat"><option>Alimentação</option><option>Transporte</option><option>Hospedagem</option><option>Combustível</option><option>Estacionamento</option><option>Uber / Taxi</option><option>Passagem</option><option>Pedágio</option><option>Material</option><option>Outros</option><option>Reembolso</option></select></div></div>
     <div class="field-group"><div class="field-label">Observação</div><input class="field-input" id="edit-obs" type="text" placeholder="Opcional..."></div>
     <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-editar">Cancelar</button><button class="btn-confirm" data-action="salvar-edicao">Salvar Alteração</button></div>
   </div>

@@ -11,6 +11,7 @@ export const CATEGORIES = [
   { id: 'pedagio', label: 'Pedágio' },
   { id: 'material', label: 'Material' },
   { id: 'outros', label: 'Outros' },
+  { id: 'reembolso', label: 'Reembolso' },
 ];
 
 export const PAGE_META = {
@@ -41,6 +42,7 @@ export const DEFAULT_POLICY = {
   uber: { ativo: true, limite: 80.0 },
   passagem: { ativo: false, limite: 800.0 },
   pedagio: { ativo: true, limite: 50.0 },
-  material: { ativo: false, limite: 300.0 },
-  outros: { ativo: false, limite: 100.0 },
+  material:   { ativo: false, limite: 300.0 },
+  outros:     { ativo: false, limite: 100.0 },
+  reembolso:  { ativo: true,  limite: 500.0 },
 };
