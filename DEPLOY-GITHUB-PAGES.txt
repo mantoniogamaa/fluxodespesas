@@ -1,0 +1,9 @@
+Passos para publicar no GitHub Pages
+
+1. Extraia o conteúdo da pasta fluxo-modular-v10 no raiz do repositório.
+2. Confirme que estes caminhos existem no GitHub:
+   - index.html
+   - assets/css/styles.css
+   - assets/js/main.js
+3. Em Settings > Pages, use a branch principal e a pasta /(root).
+4. Aguarde a nova publicação e faça um hard refresh.
