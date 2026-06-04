@@ -15,7 +15,9 @@ function ui() { return state().ui; }
 
 function currentUser() { return auth().currentUser; }
 
-function isGestor() { return auth().currentRole === 'gestor'; }
+function isGestor()     { return ['gestor','admin'].includes(auth().currentRole); }
+function isAdmin()      { return auth().currentRole === 'admin'; }
+function isFinanceiro() { return auth().currentRole === 'financeiro'; }
 
 function getColab(id) { return data().colaboradores.find((item) => Number(item.id) === Number(id)); }
 
@@ -33,6 +35,8 @@ function availableSaldo(colabId) { return sum(data().verbas.filter((item) => Num
     ui,
     currentUser,
     isGestor,
+    isAdmin,
+    isFinanceiro,
     getColab,
     getFluxo,
     scopeFilter,

@@ -520,6 +520,48 @@ function preencherUsuarioForm(id) {
     renderAll();
   }
 
+  async function handleSaveCentroCusto() {
+    const id     = byId('cc-edit-id')?.value || '';
+    const codigo = (byId('cc-codigo')?.value || '').trim().toUpperCase();
+    const nome   = (byId('cc-nome')?.value || '').trim();
+    const ativo  = byId('cc-status')?.value !== 'false';
+    if (!codigo) return showToast('Informe o código', 'error');
+    if (!nome)   return showToast('Informe o nome', 'error');
+    setLoading?.('Salvando...');
+    try {
+      const { saveCentroCusto } = await import('./supabase-service.js');
+      const payload = { codigo, nome, ativo };
+      if (id) payload.id = Number(id);
+      await saveCentroCusto(payload);
+      await syncFromSupabase();
+      closeModal('modal-centrocusto');
+      resetCCForm();
+      showToast(id ? 'Centro de custo atualizado!' : 'Centro de custo criado!', 'success');
+      renderAll();
+    } catch (err) {
+      console.error('CC save error', err);
+      showToast(err.message || 'Erro ao salvar centro de custo', 'error');
+    } finally {
+      clearLoading?.();
+    }
+  }
+
+  function resetCCForm() {
+    const title = byId('modal-cc-title');
+    if (title) title.textContent = 'Novo Centro de Custo';
+    ['cc-edit-id','cc-codigo','cc-nome'].forEach(id => { const el = byId(id); if (el) el.value = ''; });
+    if (byId('cc-status')) byId('cc-status').value = 'true';
+  }
+
+  function fillCCForm(cc) {
+    const title = byId('modal-cc-title');
+    if (title) title.textContent = 'Editar Centro de Custo';
+    byId('cc-edit-id').value = cc.id;
+    byId('cc-codigo').value  = cc.codigo;
+    byId('cc-nome').value    = cc.nome;
+    if (byId('cc-status')) byId('cc-status').value = String(cc.ativo !== false);
+  }
+
   return {
     handleLogin,
     handleSaveUsuario,
@@ -538,5 +580,8 @@ function preencherUsuarioForm(id) {
     openPrestModal,
     verifyPolicy,
     handleSaveNovaPolitica,
+    handleSaveCentroCusto,
+    resetCCForm,
+    fillCCForm,
   };
 }

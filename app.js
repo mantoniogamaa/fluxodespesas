@@ -163,6 +163,12 @@ export async function initApp() {
     handleSaveNovaPolitica: actions.handleSaveNovaPolitica,
     resetUsuarioForm: actions.resetUsuarioForm,
     preencherUsuarioForm: actions.preencherUsuarioForm,
+    handleSaveCentroCusto: actions.handleSaveCentroCusto,
+    resetCCForm: actions.resetCCForm,
+    fillCCForm: actions.fillCCForm,
+    data: context.data,
+    setLoading: uiApi.setLoading,
+    clearLoading: uiApi.clearLoading,
     renderUsuarios: renderers.renderUsuarios,
   });
 

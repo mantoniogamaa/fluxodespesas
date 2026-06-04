@@ -28,7 +28,7 @@ $$;
 create table if not exists public.usuarios (
   id            uuid primary key references auth.users(id) on delete cascade,
   email         text unique not null,
-  role          text not null check (role in ('gestor', 'gerente', 'colaborador')),
+  role          text not null check (role in ('gestor', 'admin', 'financeiro', 'gerente', 'colaborador')),
   nome          text not null,
   empresa_id    text not null default 'principal',
   colaborador_id bigint,
@@ -332,5 +332,19 @@ begin
     empresa_id = excluded.empresa_id,
     ativo      = excluded.ativo,
     updated_at = now();
+end;
+$$;
+
+-- ============================================================
+-- MIGRATION: adicionar perfis admin e financeiro
+-- Execute este bloco se o banco já existia antes desta versão
+-- ============================================================
+do $$
+begin
+  alter table public.usuarios drop constraint if exists usuarios_role_check;
+  alter table public.usuarios
+    add constraint usuarios_role_check
+    check (role in ('gestor','admin','financeiro','gerente','colaborador'));
+exception when others then null;
 end;
 $$;

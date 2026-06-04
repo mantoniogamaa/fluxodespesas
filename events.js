@@ -5,6 +5,7 @@ export function bindEvents({
   byId,
   currentUser,
   ui,
+  data,
   showToast,
   openSidebar,
   closeSidebar,
@@ -43,6 +44,11 @@ export function bindEvents({
   preencherUsuarioForm,
   handleSaveUsuario,
   handleSaveNovaPolitica,
+  handleSaveCentroCusto,
+  resetCCForm,
+  fillCCForm,
+  setLoading,
+  clearLoading,
 }) {
   document.addEventListener('click', async (event) => {
     const actionEl = event.target.closest('[data-action]');
@@ -101,6 +107,33 @@ export function bindEvents({
       case 'salvar-politica': await handleSavePolitica(); break;
       case 'abrir-nova-politica': openModal('modal-nova-politica'); break;
       case 'salvar-nova-politica': await handleSaveNovaPolitica(); break;
+      case 'abrir-novo-cc': resetCCForm(); openModal('modal-centrocusto'); break;
+      case 'salvar-cc': await handleSaveCentroCusto(); break;
+      case 'editar-cc': {
+        const cc = (FluxoState.get()?.data?._centrosCusto || []).find(c => Number(c.id) === Number(actionEl.dataset.id));
+        if (cc) { fillCCForm(cc); openModal('modal-centrocusto'); }
+        break;
+      }
+      case 'toggle-cc-status': {
+        const ccId = Number(actionEl.dataset.id);
+        const cc = (FluxoState.get()?.data?._centrosCusto || []).find(c => Number(c.id) === ccId);
+        if (!cc) break;
+        setLoading?.('Atualizando...');
+        try {
+          const { saveCentroCusto } = await import('./supabase-service.js');
+          await saveCentroCusto({ id: cc.id, codigo: cc.codigo, nome: cc.nome, ativo: !cc.ativo });
+          const { loadFullState } = await import('./supabase-service.js');
+          const remoteState = await loadFullState();
+          if (remoteState) FluxoState.hydrateRemote(remoteState);
+          showToast(`Centro "${cc.nome}" ${!cc.ativo ? 'ativado' : 'inativado'}!`, 'success');
+          renderAll();
+        } catch (err) {
+          showToast('Erro ao atualizar centro de custo', 'error');
+        } finally {
+          clearLoading?.();
+        }
+        break;
+      }
       case 'toggle-politica': {
         const cat = actionEl.dataset.cat;
         const pol = FluxoState.get().data.politica;

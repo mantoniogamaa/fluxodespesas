@@ -52,14 +52,21 @@ function renderChrome() {
       byId('top-sub').textContent = meta.subtitle;
       byId('sidebar-role-label').textContent = gestor ? 'Painel do Gestor' : 'Painel do Colaborador';
       byId('user-display-name').textContent = user.name;
-      byId('user-display-role').textContent = gestor ? 'Gestor' : 'Colaborador';
+      const roleLabels = { gestor:'Gestor', admin:'Administrador', financeiro:'Financeiro', gerente:'Gerente', colaborador:'Colaborador' };
+      byId('user-display-role').textContent = roleLabels[user.role] || user.role || 'Usuário';
       const initials = getInitials(user.name);
       byId('user-initials').textContent = initials;
       byId('topbar-avatar').textContent = initials;
 
-      ['relatorios','comparativo','verbas','log','politica','colaboradores','usuarios'].forEach((page) => {
+      const financeiro = auth().currentRole === 'financeiro';
+      ['relatorios','comparativo','verbas','log','politica','centrocusto','colaboradores','usuarios'].forEach((page) => {
         const nav = byId(`nav-${page}`);
-        if (nav) nav.style.display = gestor ? '' : 'none';
+        if (!nav) return;
+        if (['relatorios','comparativo','log'].includes(page)) {
+          nav.style.display = (gestor || financeiro) ? '' : 'none';
+        } else {
+          nav.style.display = gestor ? '' : 'none';
+        }
       });
 
       qsa('.nav-item, .bn-item, .bn-fab').forEach((item) => {
@@ -586,10 +593,38 @@ function renderUsuarios() {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum usuário cadastrado.</td></tr>';
         return;
       }
-      var roleLabel = { gestor: 'Gestor', gerente: 'Gerente', colaborador: 'Colaborador' };
+      var roleLabel = { gestor:'Gestor', admin:'Admin', financeiro:'Financeiro', gerente:'Gerente', colaborador:'Colaborador' };
+      var roleBadge = { gestor:'aprovado', admin:'reembolso', financeiro:'', gerente:'pendente', colaborador:'' };
       tbody.innerHTML = usuarios.map(function(u) {
-        return '<tr><td><strong>' + escapeHtml(u.nome) + '</strong></td><td style="color:var(--text2)">' + escapeHtml(u.email) + '</td><td><span class="badge ' + (u.role === 'gestor' ? 'aprovado' : u.role === 'gerente' ? 'pendente' : '') + '">' + (roleLabel[u.role] || u.role) + '</span></td><td><span class="colab-status-badge ' + (u.ativo ? 'ativo' : 'inativo') + '">' + (u.ativo ? 'ativo' : 'inativo') + '</span></td><td><button class="btn-ghost" style="padding:6px 14px;font-size:12px" data-action="editar-usuario" data-id="' + u.id + '">Editar</button></td></tr>';
+        return '<tr><td><strong>' + escapeHtml(u.nome) + '</strong></td><td style="color:var(--text2)">' + escapeHtml(u.email) + '</td><td><span class="badge ' + (roleBadge[u.role] || '') + '">' + (roleLabel[u.role] || u.role) + '</span></td><td><span class="colab-status-badge ' + (u.ativo ? 'ativo' : 'inativo') + '">' + (u.ativo ? 'ativo' : 'inativo') + '</span></td><td><button class="btn-ghost" style="padding:6px 14px;font-size:12px" data-action="editar-usuario" data-id="' + u.id + '">Editar</button></td></tr>';
       }).join('');
+    }
+
+function renderCentrosCusto() {
+      const ccs = data()._centrosCusto || [];
+      const rows = ccs.map(cc => `
+        <tr>
+          <td style="font-weight:700;font-size:13px;letter-spacing:.04em">${escapeHtml(cc.codigo)}</td>
+          <td style="font-size:13px">${escapeHtml(cc.nome)}</td>
+          <td><span class="colab-status-badge ${cc.ativo ? 'ativo' : 'inativo'}">${cc.ativo ? 'Ativo' : 'Inativo'}</span></td>
+          <td><div style="display:flex;gap:6px">
+            <button class="btn-sm" data-action="editar-cc" data-id="${cc.id}">Editar</button>
+            <button class="btn-sm" data-action="toggle-cc-status" data-id="${cc.id}">${cc.ativo ? 'Inativar' : 'Ativar'}</button>
+          </div></td>
+        </tr>`).join('') || `<tr><td colspan="4"><div class="empty-state"><div class="empty-text">Nenhum centro de custo cadastrado.</div></div></td></tr>`;
+      const cards = ccs.map(cc => `
+        <div class="exp-card">
+          <div class="exp-card-top">
+            <div><div class="exp-card-estab">${escapeHtml(cc.nome)}</div><div class="exp-card-meta">${escapeHtml(cc.codigo)}</div></div>
+            <span class="colab-status-badge ${cc.ativo ? 'ativo' : 'inativo'}">${cc.ativo ? 'Ativo' : 'Inativo'}</span>
+          </div>
+          <div class="exp-card-actions">
+            <button class="btn-sm" data-action="editar-cc" data-id="${cc.id}">Editar</button>
+            <button class="btn-sm" data-action="toggle-cc-status" data-id="${cc.id}">${cc.ativo ? 'Inativar' : 'Ativar'}</button>
+          </div>
+        </div>`).join('');
+      const tb = byId('cc-table'); if (tb) tb.innerHTML = rows;
+      const cs = byId('cc-cards'); if (cs) cs.innerHTML = cards;
     }
 
 function renderCurrentPage() {
@@ -604,6 +639,7 @@ function renderCurrentPage() {
         case 'log': renderLog(); break;
         case 'politica': renderPolitica(); break;
         case 'colaboradores': renderColaboradores(); break;
+        case 'centrocusto': renderCentrosCusto(); break;
         case 'usuarios': renderUsuarios(); break;
         default: renderDashboard(); break;
       }
@@ -640,6 +676,7 @@ function renderAll() {
     fillColabForm,
     populatePoliticaSelect,
     renderUsuarios,
+    renderCentrosCusto,
     showColabDetail,
     statusBadge,
     groupByCategory,
