@@ -19,6 +19,7 @@ export const PAGE_META = {
   extrato: { title: 'Extrato', subtitle: 'Saldos e fluxos por colaborador' },
   historico: { title: 'Histórico', subtitle: 'Todas as despesas e aprovações' },
   prestacao: { title: 'Prestação', subtitle: 'Monte e envie a prestação de contas' },
+  aprovacoes: { title: 'Aprovações', subtitle: 'Despesas pendentes de aprovação' },
   relatorios: { title: 'Relatórios', subtitle: 'Resumo gerencial e impressão' },
   comparativo: { title: 'Comparativo', subtitle: 'Uso de crédito por colaborador' },
   verbas: { title: 'Fluxos', subtitle: 'Créditos lançados e saldo disponível' },

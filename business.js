@@ -235,6 +235,12 @@ const AuthService = {
   };
 
   const FluxoService = {
+    gerarNumero(items) {
+      const ano = new Date().getFullYear();
+      const seq = (items.length + 1).toString().padStart(3, '0');
+      return `FLX-${ano}-${seq}`;
+    },
+
     create(payload, actorName) {
       const items = state().data.verbas;
       const colabId = Number(payload.colabId);
@@ -247,6 +253,7 @@ const AuthService = {
 
       const item = {
         id: nextId(items),
+        numero: FluxoService.gerarNumero(items),
         colabId,
         motivo,
         total,

@@ -392,6 +392,7 @@ async function handleApproveExpense(id) {
       }
       persist();
       showToast(result.message, 'success');
+      renderAll();
     }
 
 async function handleRejectExpense(id) {
@@ -424,6 +425,7 @@ async function handleRejectExpense(id) {
       }
       persist();
       showToast(result.message, 'warning');
+      renderAll();
     }
 
 function openEditExpense(id) {

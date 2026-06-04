@@ -59,7 +59,7 @@ function renderChrome() {
       byId('topbar-avatar').textContent = initials;
 
       const financeiro = auth().currentRole === 'financeiro';
-      ['relatorios','comparativo','verbas','log','politica','centrocusto','colaboradores','usuarios'].forEach((page) => {
+      ['aprovacoes','relatorios','comparativo','verbas','log','politica','centrocusto','colaboradores','usuarios'].forEach((page) => {
         const nav = byId(`nav-${page}`);
         if (!nav) return;
         if (['relatorios','comparativo','log'].includes(page)) {
@@ -68,6 +68,16 @@ function renderChrome() {
           nav.style.display = gestor ? '' : 'none';
         }
       });
+
+      // Badge de pendentes no nav de Aprovações
+      if (gestor) {
+        const pendCount = data().despesas.filter(d => d.status === 'Pendente').length;
+        const badge = byId('nav-badge-aprovacoes');
+        if (badge) {
+          badge.textContent = pendCount || '';
+          badge.style.display = pendCount ? 'inline-flex' : 'none';
+        }
+      }
 
       qsa('.nav-item, .bn-item, .bn-fab').forEach((item) => {
         const active = item.dataset.page === App.currentPage;
@@ -443,8 +453,9 @@ function renderFluxos() {
         const colab = getColab(item.colabId);
         const saldo = item.total - item.usado;
         const pct = item.total ? Math.round((item.usado / item.total) * 100) : 0;
-        return `<tr><td>${escapeHtml(colab?.nome || '—')}</td><td>${escapeHtml(item.motivo)}</td><td>${currency(item.total)}</td><td>${currency(item.usado)}</td><td>${currency(saldo)}</td><td>${pct}%</td><td>${statusBadge(saldo > 0 ? 'Aprovado' : 'Rejeitado', saldo > 0 ? 'Ativa' : 'Encerrada')}</td></tr>`;
-      }).join('') || '<tr><td colspan="7">Sem fluxos.</td></tr>';
+        const num = item.numero || ('FLX-' + String(item.id).padStart(3,'0'));
+        return `<tr><td><span style="font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(37,99,235,.14);border-radius:4px;padding:2px 7px">${escapeHtml(num)}</span></td><td>${escapeHtml(colab?.nome || '—')}</td><td>${escapeHtml(item.motivo)}</td><td>${currency(item.total)}</td><td>${currency(item.usado)}</td><td>${currency(saldo)}</td><td>${pct}%</td><td>${statusBadge(saldo > 0 ? 'Aprovado' : 'Rejeitado', saldo > 0 ? 'Ativa' : 'Encerrada')}</td></tr>`;
+      }).join('') || '<tr><td colspan="8">Sem fluxos.</td></tr>';
       byId('verbas-cards').innerHTML = verbas.map((item) => {
         const colab = getColab(item.colabId);
         return `
@@ -709,12 +720,145 @@ function renderCentrosCusto() {
       const cs = byId('cc-cards'); if (cs) cs.innerHTML = cards;
     }
 
+function renderAprovacoes() {
+      const container = byId('aprovacoes-content');
+      if (!container) return;
+
+      const fColab = byId('aprov-f-colab')?.value || '';
+      const fFluxo = byId('aprov-f-fluxo')?.value || '';
+      const fBusca = (byId('aprov-f-busca')?.value || '').toLowerCase().trim();
+
+      const pendentes = data().despesas
+        .filter(d => d.status === 'Pendente')
+        .filter(d => !fColab || String(d.colabId) === String(fColab))
+        .filter(d => !fFluxo || String(d.verbaid) === String(fFluxo))
+        .filter(d => !fBusca || [d.estab, d.obs, categoryLabel(d.cat), getColab(d.colabId)?.nome || ''].join(' ').toLowerCase().includes(fBusca))
+        .sort((a, b) => String(b.lancadoEm || b.data).localeCompare(String(a.lancadoEm || a.data)));
+
+      const colaboradoresOpts = data().colaboradores.map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join('');
+      const fluxosOpts = data().verbas.map(v => `<option value="${v.id}">${escapeHtml(v.numero ? v.numero + ' — ' : '')}${escapeHtml(v.motivo)}</option>`).join('');
+
+      container.innerHTML = `
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 style="font-size:18px;font-weight:800;letter-spacing:-.3px;color:var(--text)">Aprovações</h2>
+              ${pendentes.length ? `<span style="background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,.18);border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700">${pendentes.length} pendente${pendentes.length !== 1 ? 's' : ''}</span>` : `<span style="background:var(--green-dim);color:var(--green);border:1px solid rgba(21,128,61,.18);border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700">Em dia</span>`}
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">Analise e decida cada despesa antes de liberar o pagamento</div>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card" style="padding:14px;margin-bottom:16px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div style="position:relative;flex:1;min-width:200px">
+              <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="filter-input" id="aprov-f-busca" type="text" placeholder="Buscar por estabelecimento..." style="padding-left:32px;width:100%" data-input="render-aprovacoes">
+            </div>
+            <div class="select-wrapper" style="min-width:160px">
+              <select class="filter-input" id="aprov-f-colab" data-change="render-aprovacoes">
+                <option value="">Todos colaboradores</option>
+                ${colaboradoresOpts}
+              </select>
+            </div>
+            <div class="select-wrapper" style="min-width:180px">
+              <select class="filter-input" id="aprov-f-fluxo" data-change="render-aprovacoes">
+                <option value="">Todos os fluxos</option>
+                ${fluxosOpts}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de pendentes -->
+        ${pendentes.length === 0 ? `
+          <div class="card">
+            <div class="empty-state" style="padding:56px 24px">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Nenhuma pendência</div>
+              <div style="font-size:13px;color:var(--text3)">Todas as despesas foram analisadas.</div>
+            </div>
+          </div>
+        ` : `
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${pendentes.map(item => {
+              const colab = getColab(item.colabId);
+              const fluxo = data().verbas.find(v => Number(v.id) === Number(item.verbaid));
+              const ini = getInitials(colab?.nome || '?');
+              const col = colab?.color || '#4F7CFF';
+              return `
+                <div class="aprov-card">
+                  <!-- Foto do comprovante -->
+                  <div class="aprov-foto" ${item.fotoUrl ? `data-action="ver-foto-despesa" data-url="${item.fotoUrl}" style="cursor:pointer" title="Ver comprovante"` : ''}>
+                    ${item.fotoUrl
+                      ? `<img src="${item.fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm)">`
+                      : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}
+                  </div>
+
+                  <!-- Dados principais -->
+                  <div class="aprov-body">
+                    <div class="aprov-top">
+                      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                        <div style="width:30px;height:30px;border-radius:8px;background:${col};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
+                        <div style="min-width:0">
+                          <div style="font-weight:700;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(item.estab)}</div>
+                          <div style="font-size:11px;color:var(--text3);margin-top:1px">${escapeHtml(colab?.nome || '—')} · ${dateBr(item.data)}</div>
+                        </div>
+                      </div>
+                      <div style="text-align:right;flex-shrink:0">
+                        <div style="font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--text)">${currency(item.valor)}</div>
+                        ${item.politicaExcesso ? `<span style="font-size:10px;background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,.18);border-radius:4px;padding:1px 6px;font-weight:700">+${currency(item.politicaExcesso.excesso)} acima do limite</span>` : ''}
+                      </div>
+                    </div>
+
+                    <div class="aprov-meta">
+                      <span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span>
+                      ${item.centroCusto ? `<span style="font-size:11px;color:var(--text2);background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-weight:500">${escapeHtml(item.centroCusto)}</span>` : ''}
+                      ${fluxo ? `<span style="font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(37,99,235,.14);border-radius:4px;padding:2px 7px;font-weight:600">${escapeHtml(fluxo.numero || 'FLX-' + fluxo.id)}</span>` : ''}
+                      <span style="font-size:11px;color:var(--text3);margin-left:auto">${item.lancadoEm || ''}</span>
+                    </div>
+
+                    ${item.justificativa ? `
+                      <div style="background:rgba(180,83,9,.06);border:1px solid rgba(180,83,9,.14);border-radius:6px;padding:8px 10px;margin-top:8px">
+                        <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Justificativa</div>
+                        <div style="font-size:12px;color:var(--text2);line-height:1.5">${escapeHtml(item.justificativa)}</div>
+                      </div>` : ''}
+
+                    <div class="aprov-actions">
+                      ${item.fotoUrl ? `<button class="btn-sm" data-action="ver-foto-despesa" data-url="${item.fotoUrl}" style="gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Ver comprovante</button>` : ''}
+                      <div style="display:flex;gap:8px;margin-left:auto">
+                        <button class="btn-rejeitar" data-action="rejeitar-despesa" data-id="${item.id}">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          Rejeitar
+                        </button>
+                        <button class="btn-aprovar" data-action="aprovar-despesa" data-id="${item.id}">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          Aprovar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+        `}`;
+
+      // re-bind filtros dinâmicos
+      const bindFilter = (id, handler) => { const el = byId(id); if (el && !el._bound) { el.addEventListener('input', handler); el.addEventListener('change', handler); el._bound = true; } };
+      bindFilter('aprov-f-busca', renderAprovacoes);
+      bindFilter('aprov-f-colab', renderAprovacoes);
+      bindFilter('aprov-f-fluxo', renderAprovacoes);
+    }
+
 function renderCurrentPage() {
       switch (App.currentPage) {
         case 'dashboard': renderDashboard(); break;
         case 'extrato': renderExtrato(); break;
         case 'historico': renderHistorico(); break;
         case 'prestacao': renderPrestacao(); break;
+        case 'aprovacoes': renderAprovacoes(); break;
         case 'relatorios': renderRelatorios(); break;
         case 'comparativo': renderComparativo(); break;
         case 'verbas': renderFluxos(); break;
