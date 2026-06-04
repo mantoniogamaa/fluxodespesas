@@ -296,10 +296,16 @@ function renderPrestacao() {
               <div class="prest-summary">
                 <div class="prest-title">Resumo do fluxo</div>
                 <div class="prest-row"><span>Crédito total</span><span class="prest-val">${currency(selectedFluxo.total)}</span></div>
-                <div class="prest-row"><span>Já utilizado</span><span class="prest-val">${currency(selectedFluxo.usado)}</span></div>
+                <div class="prest-row"><span>Ja utilizado</span><span class="prest-val">${currency(selectedFluxo.usado)}</span></div>
                 <div class="prest-row saldo-pos"><span>Saldo atual</span><span class="prest-val">${currency(saldo)}</span></div>
                 <div class="prest-row"><span>Rascunho atual</span><span class="prest-val">${currency(totalDraft)}</span></div>
-              </div>` : '<div class="empty-state"><div class="empty-text">Crie um fluxo antes de prestar contas.</div></div>'}
+              </div>` : `
+              <div class="empty-state" style="padding:24px 0">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                <div class="empty-text" style="margin-bottom:6px">Nenhum fluxo ativo</div>
+                <div style="font-size:12px;color:var(--text3);margin-bottom:16px">${isGestor() ? 'Crie um fluxo de credito para iniciar os lancamentos.' : 'Solicite ao seu gestor que crie um credito para voce.'}</div>
+                ${isGestor() ? `<button class="btn-primary" style="width:auto;padding:10px 20px;font-size:13px" data-action="open-nova-fluxo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar Fluxo de Credito</button>` : ''}
+              </div>`}
             <div id="prest-itens-list">${renderPrestacaoItems()}</div>
             <div class="modal-actions">
               <button class="btn-ghost" data-action="limpar-rascunho">Limpar rascunho</button>
@@ -480,6 +486,35 @@ function renderCategoriaChips() {
           <span class="chip-icon">${CAT_ICONS[cat.id] || CAT_ICONS.outros}</span>${escapeHtml(cat.label)}
         </button>
       `).join('');
+
+      // Mostrar seletor de tipo de refeição se alimentação estiver selecionada
+      const refRow = byId('pi-tipo-refeicao');
+      if (refRow) {
+        const isAlim = ui().catSelecionada === 'alimentacao';
+        refRow.style.display = isAlim ? 'block' : 'none';
+        if (isAlim) {
+          const pol = data().politica || DEFAULT_POLICY;
+          const cfg = pol.alimentacao;
+          const tipos = [
+            { id:'almoco',  label:'Almoço',        limite: cfg?.almoco?.limite },
+            { id:'jantar',  label:'Jantar',         limite: cfg?.jantar?.limite },
+            { id:'outros',  label:'Outro horário',  limite: cfg?.outros?.limite },
+          ];
+          const chipsHtml = tipos.map(t => `
+            <button type="button" class="refeicao-chip ${ui().refeicaoTipo === t.id ? 'selected' : ''}"
+              data-action="selecionar-refeicao" data-tipo="${t.id}">
+              ${escapeHtml(t.label)}
+              ${t.limite ? `<span class="limite-badge">R$ ${t.limite.toFixed(0)}</span>` : ''}
+            </button>`).join('');
+          const chipsWrap = byId('refeicao-chips');
+          if (chipsWrap) chipsWrap.innerHTML = chipsHtml;
+        } else {
+          // Reset tipo quando troca de categoria
+          FluxoState.setUi({ refeicaoTipo: null });
+          const strip = byId('pi-policy-info');
+          if (strip) strip.classList.remove('show');
+        }
+      }
     }
 
 function updateFluxoPreview() {

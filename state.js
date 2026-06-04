@@ -19,6 +19,7 @@ export const FluxoState = (() => {
     ui: {
       itensPrest: [],
       catSelecionada: null,
+      refeicaoTipo: null,
       fotoPrestUrl: null,
       verbaSelecionadaId: null,
       rascunhoOffline: [],

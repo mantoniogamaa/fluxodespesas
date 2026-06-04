@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
   <title>Fluxo — Despesas em Movimento</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -127,12 +127,20 @@
         <button class="hamburger" data-action="open-sidebar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         <div><div class="page-title" id="top-title">Dashboard</div><div class="page-subtitle" id="top-sub">Visão geral</div></div>
       </div>
-      <!-- saldo pill mobile colaborador -->
-      <div class="topbar-saldo-pill" id="topbar-saldo-pill">
-        <span style="display:flex;align-items:center;color:var(--green)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
-        <div><div class="topbar-saldo-val" id="topbar-saldo-val">—</div><div class="topbar-saldo-lbl">disponível</div></div>
+      <!-- busca global desktop -->
+      <div class="topbar-search" id="topbar-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="topbar-search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="global-search-input" placeholder="Buscar despesas, colaboradores..." autocomplete="off">
+        <kbd>⌘K</kbd>
       </div>
-      <div class="user-avatar" id="topbar-avatar" style="width:30px;height:30px;font-size:11px;cursor:pointer" data-action="open-sidebar">JD</div>
+      <div class="topbar-right">
+        <!-- saldo pill colaborador -->
+        <div class="topbar-saldo-pill" id="topbar-saldo-pill">
+          <span style="display:flex;align-items:center;color:var(--green)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+          <div><div class="topbar-saldo-val" id="topbar-saldo-val">—</div><div class="topbar-saldo-lbl">disponível</div></div>
+        </div>
+        <div class="user-avatar" id="topbar-avatar" style="width:30px;height:30px;font-size:11px;cursor:pointer" data-action="open-sidebar">JD</div>
+      </div>
     </div>
 
     <div class="content">
@@ -459,15 +467,23 @@
       </div>
     </div>
     <div class="field-group"><div class="field-label">Categoria</div><div id="cat-chips"></div></div>
+    <!-- Tipo de refeição — aparece só quando Alimentação é selecionada -->
+    <div id="pi-tipo-refeicao" style="display:none;margin-bottom:14px">
+      <div class="field-label" style="margin-bottom:8px">Tipo de refeição</div>
+      <div class="refeicao-chips-wrap" id="refeicao-chips"></div>
+    </div>
+    <!-- Info de limite da política -->
+    <div class="pi-policy-info" id="pi-policy-info">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="pi-policy-info-txt"></span>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="field-group"><div class="field-label">Valor (R$)</div><input class="field-input" id="pi-valor" type="number" inputmode="decimal" placeholder="0,00" style="font-size:17px;font-weight:700;color:var(--accent)" data-input="verificar-politica"></div>
       <div class="field-group"><div class="field-label">Data</div><input class="field-input" id="pi-data" type="date"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="pi-hora-row">
-      <div class="field-group"><div class="field-label">Horário da despesa</div><input class="field-input" id="pi-hora" type="time" data-input="verificar-politica"></div>
-      <div class="field-group" style="display:flex;align-items:flex-end;padding-bottom:2px"><div style="font-size:11px;color:var(--text3)">Usado para verificar limite de almoço / jantar</div></div>
-    </div>
     <div class="field-group"><div class="field-label">Estabelecimento / Descrição</div><input class="field-input" id="pi-desc" type="text" placeholder="Ex: Almoço com cliente, Shell posto km 42..." data-input="verificar-politica"></div>
+    <!-- campo oculto para compatibilidade com verificação de horário -->
+    <input type="hidden" id="pi-hora">
     <!-- aviso de política -->
     <div class="politica-aviso" id="politica-aviso">
       <div class="politica-aviso-title">

@@ -94,7 +94,8 @@ function handleAddPrestItem() {
       if (!cat) return showToast('Selecione uma categoria', 'warning');
       if (!valor) return showToast('Informe o valor da despesa', 'warning');
       if (!estab) return showToast('Descreva a despesa', 'warning');
-      const policyCheck = FluxoBusiness.PolicyService.checkLimit(data().politica, cat, valor, horario);
+      const tipoRef = ui().refeicaoTipo || null;
+      const policyCheck = FluxoBusiness.PolicyService.checkLimit(data().politica, cat, valor, horario, tipoRef);
       if (policyCheck && !justificativa) return showToast('Despesa acima do limite precisa de justificativa', 'warning');
 
       const item = {
@@ -104,6 +105,7 @@ function handleAddPrestItem() {
         estab,
         desc: estab,
         horario,
+        tipoRefeicao: tipoRef,
         justificativa,
         fotoUrl: ui().fotoPrestUrl,
         politicaExcesso: policyCheck,
@@ -393,10 +395,15 @@ function openPrestModal() {
       byId('pi-edit-idx').value = '-1';
       byId('pi-valor').value = '';
       byId('pi-data').value = new Date().toISOString().slice(0, 10);
-      byId('pi-hora').value = '';
+      const now = new Date();
+      byId('pi-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
       byId('pi-desc').value = '';
       byId('pi-justificativa').value = '';
-      FluxoState.setUi({ catSelecionada: null, fotoPrestUrl: null });
+      FluxoState.setUi({ catSelecionada: null, fotoPrestUrl: null, refeicaoTipo: null });
+      const refRow = document.getElementById('pi-tipo-refeicao');
+      if (refRow) refRow.style.display = 'none';
+      const policyInfo = document.getElementById('pi-policy-info');
+      if (policyInfo) policyInfo.classList.remove('show');
       byId('prest-foto-preview').style.display = 'none';
       byId('prest-img-preview').src = '';
       const ocrArea = byId('prest-ocr-area');
@@ -407,20 +414,45 @@ function openPrestModal() {
 
 function verifyPolicy() {
       const wrapper = byId('politica-aviso');
-      const title = byId('politica-aviso-title-txt');
-      const body = byId('politica-aviso-body');
-      const val = Number(byId('pi-valor')?.value || 0);
-      const cat = ui().catSelecionada;
-      const hora = byId('pi-hora')?.value || '';
-      const check = FluxoBusiness.PolicyService.checkLimit(data().politica, cat, val, hora);
+      const title   = byId('politica-aviso-title-txt');
+      const body    = byId('politica-aviso-body');
+      const val     = Number(byId('pi-valor')?.value || 0);
+      const cat     = ui().catSelecionada;
+      const hora    = byId('pi-hora')?.value || '';
+      const tipoRef = ui().refeicaoTipo || null;
+      const check   = FluxoBusiness.PolicyService.checkLimit(data().politica, cat, val, hora, tipoRef);
+
+      // Mostrar info de limite proativamente
+      _updatePolicyInfo(cat, tipoRef);
+
       if (!wrapper) return;
-      if (!check) {
-        wrapper.classList.remove('show');
-        return;
-      }
+      if (!check) { wrapper.classList.remove('show'); return; }
       wrapper.classList.add('show');
       title.textContent = 'Despesa acima do limite';
-      body.textContent = `Limite permitido: ${currency(check.limite)}${check.subLabel ? ` (${check.subLabel})` : ''}. Excesso atual: ${currency(check.excesso)}.`;
+      body.textContent = `Limite permitido: ${currency(check.limite)}${check.subLabel ? ` (${check.subLabel})` : ''}. Excesso: ${currency(check.excesso)}.`;
+    }
+
+    function _updatePolicyInfo(cat, tipoRef) {
+      const strip  = byId('pi-policy-info');
+      const txt    = byId('pi-policy-info-txt');
+      if (!strip || !txt) return;
+      if (!cat) { strip.classList.remove('show'); return; }
+      const pol    = data().politica || DEFAULT_POLICY;
+      const config = pol[cat];
+      if (!config || !config.ativo) { strip.classList.remove('show'); return; }
+      let info = '';
+      if (cat === 'alimentacao') {
+        if (tipoRef && config[tipoRef]) {
+          info = `Limite ${tipoRef === 'almoco' ? 'almoço' : tipoRef === 'jantar' ? 'jantar' : 'outro horário'}: ${currency(config[tipoRef].limite)}`;
+        } else {
+          const a = config.almoco?.limite, j = config.jantar?.limite;
+          info = `Almoço: ${currency(a)} · Jantar: ${currency(j)}`;
+        }
+      } else {
+        info = `Limite desta categoria: ${currency(config.limite)}`;
+      }
+      txt.textContent = info;
+      strip.classList.add('show');
     }
 
 
@@ -443,19 +475,22 @@ async function handleSaveUsuario() {
           await updateSupabaseUsuario(id, { nome, role, ativo });
           closeModal('modal-usuario');
           resetUsuarioForm();
+          await syncFromSupabase();
           showToast('Usuário atualizado!', 'success');
+          renderAll();
         } else {
+          setLoading?.('Criando usuário...');
           await createSupabaseUsuario({ email, senha, nome, role });
           closeModal('modal-usuario');
           resetUsuarioForm();
-          showToast('Usuário criado!', 'success');
+          await syncFromSupabase();
+          showToast(`Usuário ${nome} criado com sucesso!`, 'success');
+          renderAll();
         }
       } catch (err) {
-        if (err.message?.includes('painel do Supabase')) {
-          showToast('Para criar usuários, acesse o painel do Supabase → Authentication → Users', 'warning');
-        } else {
-          showToast(err.message || 'Erro ao salvar usuário', 'error');
-        }
+        showToast(err.message || 'Erro ao salvar usuário', 'error');
+      } finally {
+        clearLoading?.();
       }
     }
 

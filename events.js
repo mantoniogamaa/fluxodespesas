@@ -145,7 +145,8 @@ export function bindEvents({
       case 'rejeitar-despesa': await handleRejectExpense(actionEl.dataset.id); break;
       case 'editar-despesa': openEditExpense(actionEl.dataset.id); break;
       case 'select-avatar-color': App.selectedAvatarColor = actionEl.dataset.color; renderAvatarPicker(); break;
-      case 'selecionar-categoria': FluxoState.setUi({ catSelecionada: actionEl.dataset.cat }); renderCategoriaChips(); verifyPolicy(); break;
+      case 'selecionar-categoria': FluxoState.setUi({ catSelecionada: actionEl.dataset.cat, refeicaoTipo: null }); renderCategoriaChips(); verifyPolicy(); break;
+      case 'selecionar-refeicao': FluxoState.setUi({ refeicaoTipo: actionEl.dataset.tipo }); renderCategoriaChips(); verifyPolicy(); break;
       case 'abrir-camera-prest': byId('prest-file-camera').click(); break;
       case 'abrir-galeria-prest': byId('prest-file-galeria').click(); break;
       case 'remover-foto-prest': {
