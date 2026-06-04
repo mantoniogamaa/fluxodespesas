@@ -404,8 +404,21 @@
     <div class="modal-sub">Anexe o comprovante e preencha os dados</div>
     <div id="prest-foto-area" style="margin-bottom:14px">
       <div id="prest-foto-preview" style="display:none;position:relative;border-radius:9px;overflow:hidden;margin-bottom:9px">
-        <img id="prest-img-preview" src="" style="width:100%;max-height:180px;object-fit:contain;background:#1a1a2a;border-radius:9px;">
-        <button data-action="remover-foto-prest" style="position:absolute;top:7px;right:7px;background:rgba(255,92,92,.9);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <img id="prest-img-preview" src="" style="width:100%;max-height:180px;object-fit:contain;background:var(--surface3);border-radius:9px;">
+        <button data-action="remover-foto-prest" style="position:absolute;top:7px;right:7px;background:rgba(255,59,48,.9);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <!-- OCR: botão + strip de progresso -->
+      <div id="prest-ocr-area" style="display:none;margin-bottom:10px">
+        <div id="prest-ocr-strip" class="ocr-strip" style="display:none">
+          <div class="ocr-spin"></div>
+          <span id="prest-ocr-status">Lendo comprovante...</span>
+        </div>
+        <button type="button" id="btn-ler-comprovante" data-action="ler-comprovante"
+          style="width:100%;padding:10px 14px;background:transparent;border:1.5px solid var(--accent);border-radius:9px;color:var(--accent);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s"
+          onmouseover="this.style.background='rgba(0,122,255,.06)'" onmouseout="this.style.background='transparent'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Ler comprovante automaticamente
+        </button>
       </div>
       <div id="prest-foto-btns" style="display:flex;gap:8px">
         <button type="button" data-action="abrir-camera-prest" style="flex:1;padding:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Câmera</button>
@@ -659,6 +672,7 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="./config.js"></script>
 <script type="module" src="./main.js"></script>
 

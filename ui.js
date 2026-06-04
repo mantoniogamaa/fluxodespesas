@@ -86,6 +86,12 @@ function updateFilePreview(file) {
         FluxoState.setUi({ fotoPrestUrl: reader.result });
         byId('prest-img-preview').src = reader.result;
         byId('prest-foto-preview').style.display = 'block';
+        const ocrArea = byId('prest-ocr-area');
+        if (ocrArea) ocrArea.style.display = 'block';
+        const ocrStrip = byId('prest-ocr-strip');
+        if (ocrStrip) ocrStrip.style.display = 'none';
+        const ocrBtn = byId('btn-ler-comprovante');
+        if (ocrBtn) ocrBtn.style.display = 'flex';
       };
       reader.readAsDataURL(file);
     }

@@ -108,7 +108,51 @@ export function bindEvents({
       case 'selecionar-categoria': FluxoState.setUi({ catSelecionada: actionEl.dataset.cat }); renderCategoriaChips(); verifyPolicy(); break;
       case 'abrir-camera-prest': byId('prest-file-camera').click(); break;
       case 'abrir-galeria-prest': byId('prest-file-galeria').click(); break;
-      case 'remover-foto-prest': FluxoState.setUi({ fotoPrestUrl: null }); byId('prest-img-preview').src = ''; byId('prest-foto-preview').style.display = 'none'; break;
+      case 'remover-foto-prest': {
+        FluxoState.setUi({ fotoPrestUrl: null });
+        byId('prest-img-preview').src = '';
+        byId('prest-foto-preview').style.display = 'none';
+        const ocrAreaRm = byId('prest-ocr-area');
+        if (ocrAreaRm) ocrAreaRm.style.display = 'none';
+        break;
+      }
+      case 'ler-comprovante': {
+        const imgEl = byId('prest-img-preview');
+        if (!imgEl?.src?.startsWith('data:')) { showToast('Nenhuma foto carregada', 'warning'); break; }
+        const ocrStrip = byId('prest-ocr-strip');
+        const ocrBtn   = byId('btn-ler-comprovante');
+        const statusEl = byId('prest-ocr-status');
+        if (ocrStrip) ocrStrip.style.display = 'flex';
+        if (ocrBtn)   ocrBtn.style.display   = 'none';
+        try {
+          const { lerComprovante } = await import('./ocr.js');
+          const result = await lerComprovante(imgEl.src, pct => {
+            if (statusEl) statusEl.textContent = `Lendo comprovante... ${pct}%`;
+          });
+          if (result.valor != null) {
+            const valorEl = byId('pi-valor');
+            if (valorEl && !valorEl.value) valorEl.value = result.valor;
+          }
+          if (result.estab) {
+            const descEl = byId('pi-desc');
+            if (descEl && !descEl.value) descEl.value = result.estab;
+          }
+          verifyPolicy();
+          if (result.valor != null) {
+            const fmt = result.valor.toFixed(2).replace('.', ',');
+            showToast(`OCR: ${result.estab ? result.estab + ' · ' : ''}R$ ${fmt}`, 'success');
+          } else {
+            showToast('OCR concluído — confirme os dados', 'warning');
+          }
+        } catch (err) {
+          console.error('OCR error', err);
+          showToast('Erro ao ler comprovante', 'error');
+        } finally {
+          if (ocrStrip) ocrStrip.style.display = 'none';
+          if (ocrBtn)   ocrBtn.style.display   = 'flex';
+        }
+        break;
+      }
       case 'remover-item-prest': {
         const items = [...ui().itensPrest];
         items.splice(Number(actionEl.dataset.index), 1);

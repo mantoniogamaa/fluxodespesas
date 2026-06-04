@@ -398,6 +398,9 @@ function openPrestModal() {
       byId('pi-justificativa').value = '';
       FluxoState.setUi({ catSelecionada: null, fotoPrestUrl: null });
       byId('prest-foto-preview').style.display = 'none';
+      byId('prest-img-preview').src = '';
+      const ocrArea = byId('prest-ocr-area');
+      if (ocrArea) ocrArea.style.display = 'none';
       verifyPolicy();
       openModal('modal-item-prest');
     }
