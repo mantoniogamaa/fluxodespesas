@@ -15,6 +15,9 @@ import { createSupabaseCloudAdapter } from './supabase-cloud-adapter.js';
 import { getSessionUser, getProfile, mapCloudIdentity, loadFullState, loadRascunho } from './supabase-service.js';
 
 export async function initApp() {
+  if (localStorage.getItem('fluxo_sidebar_collapsed') === '1') {
+    byId('sidebar')?.classList.add('collapsed');
+  }
   const context = createAppContext({ FluxoState, FluxoBusiness, sum });
   context.App.selectedAvatarColor = COLORS[0];
   const cloudContext = { userId: null, workspaceId: null };
@@ -76,7 +79,6 @@ export async function initApp() {
 
   // safeRenderAll usa renderRuntime para evitar problema de closure
   const safeRenderAll = () => {
-    if (!FluxoState.get()?.auth?.currentUser) return;
     if (renderRuntime.renderAll) renderRuntime.renderAll();
   };
 

@@ -54,6 +54,12 @@ export function bindEvents({
       case 'logout': await handleLogout(); break;
       case 'open-sidebar': openSidebar(); break;
       case 'close-sidebar': closeSidebar(); break;
+      case 'toggle-sidebar': {
+        const sb = byId('sidebar');
+        const collapsed = sb?.classList.toggle('collapsed');
+        localStorage.setItem('fluxo_sidebar_collapsed', collapsed ? '1' : '0');
+        break;
+      }
       case 'go-page': App.currentPage = actionEl.dataset.page; closeSidebar(); renderAll(); break;
       case 'hist-filter': {
         const val = actionEl.dataset.value;
@@ -73,6 +79,7 @@ export function bindEvents({
       }
       case 'open-nova-fluxo': hydrateFluxoModal(); openModal('modal-verba'); break;
       case 'close-modal': closeModal(actionEl.dataset.modalId); break;
+      case 'open-prest-modal': openPrestModal(); break;
       case 'add-item-prest': handleAddPrestItem(); break;
       case 'abrir-enviar-prest': renderEnviarPrestResumo(); openModal('modal-enviar-prest'); break;
       case 'confirmar-prestacao': await handleConfirmPrestacao(); break;

@@ -1,3 +1,16 @@
+const CAT_ICONS = {
+  alimentacao: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>`,
+  hospedagem:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14"/><path d="M3 15h18"/><path d="M9 22v-7h6v7"/></svg>`,
+  combustivel: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v14"/><path d="M3 12h10"/><path d="M14 8h1a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 6"/></svg>`,
+  estacion:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>`,
+  transporte:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>`,
+  uber:        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/><path d="M5 11h14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>`,
+  passagem:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4c-2 0-4 2-4 2L8 7.2l-5 2 3 3.2 1 4.8 4.8 1 3.2 3z"/><path d="m3 11 11 11"/></svg>`,
+  pedagio:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>`,
+  material:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>`,
+  outros:      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
+};
+
 export function createRenderers({
   FluxoState,
   CATEGORIES,
@@ -239,8 +252,8 @@ function historicoActions(item) {
       if (!isGestor()) return '';
       if (item.status !== 'Pendente') return '';
       return `<div style="display:flex;gap:6px;align-items:center">
-        <button title="Aprovar" style="width:28px;height:28px;border-radius:6px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" data-action="aprovar-despesa" data-id="${item.id}">✓</button>
-        <button title="Rejeitar" style="width:28px;height:28px;border-radius:6px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" data-action="rejeitar-despesa" data-id="${item.id}">✕</button>
+        <button title="Aprovar" style="width:28px;height:28px;border-radius:6px;background:rgba(52,199,89,.10);border:1px solid rgba(52,199,89,.2);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="aprovar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <button title="Rejeitar" style="width:28px;height:28px;border-radius:6px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="rejeitar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>`;
     }
 
@@ -255,7 +268,7 @@ function renderPrestacao() {
       byId('prest-content').innerHTML = `
         <div class="grid-2">
           <div class="card">
-            <div class="table-header"><div class="section-title">Montar prestação</div><button class="btn-sm green" data-action="add-item-prest">Adicionar despesa</button></div>
+            <div class="table-header"><div class="section-title">Montar prestação</div><button class="btn-sm green" data-action="open-prest-modal"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar despesa</button></div>
             <div class="field-group"><div class="field-label">Fluxo / Viagem</div><div class="select-wrapper"><select class="field-input" id="prest-fluxo-select">${flows.map((item) => `<option value="${item.id}" ${Number(item.id) === Number(selectedId) ? 'selected' : ''}>${escapeHtml(item.motivo)}</option>`).join('')}</select></div></div>
             ${selectedFluxo ? `
               <div class="prest-summary">
@@ -397,8 +410,7 @@ function renderPolitica() {
       byId('politica-content').innerHTML = CATEGORIES.map((cat) => {
         const config = pol[cat.id];
         if (!config) return '';
-        var icons = {alimentacao:'🍽️',hospedagem:'🏨',combustivel:'⛽',estacion:'🅿️',transporte:'🚌',uber:'🚗',passagem:'✈️',pedagio:'🛣️',material:'📦',outros:'•'};
-        var icon = icons[cat.id] || '•';
+        var icon = CAT_ICONS[cat.id] || CAT_ICONS.outros;
         if (cat.id === 'alimentacao') {
           return `
             <div class="politica-cat-row">
@@ -412,7 +424,7 @@ function renderPolitica() {
         }
         return `
           <div class="politica-cat-row">
-            <div class="politica-cat-header"><div class="politica-cat-icon">•</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
+            <div class="politica-cat-header"><div class="politica-cat-icon">${icon}</div><div class="politica-cat-name">${cat.label}</div><button class="politica-toggle ${config.ativo ? 'on' : ''}" data-action="toggle-politica" data-cat="${cat.id}"></button></div>
             <div class="politica-limite-row single"><div class="politica-limite-field"><div class="politica-limite-label">Limite (R$)</div><input class="politica-limite-input" data-policy-field="${cat.id}.limite" type="number" value="${config.limite}"></div></div>
           </div>`;
       }).join('');
@@ -442,7 +454,9 @@ function renderCategoriaChips() {
       const wrapper = byId('cat-chips');
       if (!wrapper) return;
       wrapper.innerHTML = CATEGORIES.map((cat) => `
-        <button type="button" class="cat-chip ${ui().catSelecionada === cat.id ? 'selected' : ''}" data-action="selecionar-categoria" data-cat="${cat.id}">${escapeHtml(cat.label)}</button>
+        <button type="button" class="cat-chip ${ui().catSelecionada === cat.id ? 'selected' : ''}" data-action="selecionar-categoria" data-cat="${cat.id}">
+          <span class="chip-icon">${CAT_ICONS[cat.id] || CAT_ICONS.outros}</span>${escapeHtml(cat.label)}
+        </button>
       `).join('');
     }
 

@@ -45,7 +45,7 @@
         <div style="font-size:12px;color:var(--text3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Despesas em Movimento</div>
       </div>
     </div>
-    <div class="auth-tagline">◆ Gestão de viagens corporativas para PMEs</div>
+    <div class="auth-tagline"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 2L22 12 12 22 2 12z"/></svg> Gestão de viagens corporativas para PMEs</div>
     <div class="auth-sub">Faça login para acessar seu painel</div>
     <div class="role-toggle">
       <button class="role-btn active" data-action="set-role" data-role="gestor"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Gestor</button>
@@ -53,31 +53,22 @@
     </div>
     <div class="field-group"><div class="field-label">E-mail</div><input class="field-input" type="email" id="auth-email" value="" inputmode="email" autocomplete="email" placeholder="seu email"></div>
     <div class="field-group"><div class="field-label">Senha</div><input class="field-input" type="password" id="auth-pass" value="123456"></div>
-    <button class="btn-primary" data-action="login">Entrar →</button>
-    <div style="display:flex;align-items:center;gap:12px;margin:4px 0">
-      <div style="flex:1;height:1px;background:var(--border2)"></div>
-      <span style="font-size:12px;color:var(--text3);font-weight:500">ou</span>
-      <div style="flex:1;height:1px;background:var(--border2)"></div>
-    </div>
-    <button id="btn-demo-toggle" onclick="window.toggleDemoMode()" style="width:100%;padding:13px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.borderColor='var(--text3)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Ver demonstração
-    </button>
-    <div class="auth-hint" id="auth-hint-text" style="margin-top:8px">Gestor: demo.gestor@empresa / 12345</div>
+    <button class="btn-primary" data-action="login" style="display:flex;align-items:center;justify-content:center;gap:8px">Entrar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+    <div class="auth-hint" id="auth-hint-text" style="margin-top:14px">Gestor: demo.gestor@empresa / 12345</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
   <div id="demo-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:#854d0e;color:#fef08a;font-size:13px;font-weight:500;position:sticky;top:0;z-index:999;">
-    <span>⚠ Modo demonstração ativo — dados fictícios para teste</span>
+    <span style="display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Modo demonstração ativo — dados fictícios para teste</span>
     <button onclick="window.toggleDemoMode()" style="background:#713f12;border:none;color:#fef08a;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Desativar demo</button>
   </div>
   <div class="sidebar-overlay" id="sidebar-overlay" data-action="close-sidebar"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-mark">
-        <div style="width:32px;height:32px;flex-shrink:0"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div style="width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="lg1" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#3B82F6"/>
@@ -97,6 +88,9 @@
 </svg></div>
         <div class="logo-text">Fluxo</div>
       </div>
+      <button class="sidebar-collapse-btn" id="btn-sidebar-toggle" data-action="toggle-sidebar" title="Recolher menu">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
       <div class="logo-sub" id="sidebar-role-label">Painel do Gestor</div>
     </div>
     <nav class="nav-section">
@@ -405,7 +399,7 @@
     <div id="prest-foto-area" style="margin-bottom:14px">
       <div id="prest-foto-preview" style="display:none;position:relative;border-radius:9px;overflow:hidden;margin-bottom:9px">
         <img id="prest-img-preview" src="" style="width:100%;max-height:180px;object-fit:contain;background:var(--surface3);border-radius:9px;">
-        <button data-action="remover-foto-prest" style="position:absolute;top:7px;right:7px;background:rgba(255,59,48,.9);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <button data-action="remover-foto-prest" style="position:absolute;top:7px;right:7px;background:rgba(255,59,48,.9);border:none;border-radius:50%;width:26px;height:26px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <!-- OCR: botão + strip de progresso -->
       <div id="prest-ocr-area" style="display:none;margin-bottom:10px">

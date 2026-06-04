@@ -854,3 +854,197 @@ option{background:#FFFFFF;}
   canvas { max-width: 100% !important; }
 }
 #rel-print-header { display: none; }
+
+/* ══════════════════════════════════════════════════════
+   PREMIUM — animações, hover states e visual upgrade
+   ══════════════════════════════════════════════════════ */
+
+/* ── Keyframes ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position:-200% center; }
+  100% { background-position:200% center; }
+}
+@keyframes softPulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:.65; }
+}
+@keyframes scaleIn {
+  from { opacity:0; transform:scale(.94); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+/* ── Stat cards — tint por cor ── */
+.stat-card.blue   { background:linear-gradient(135deg,#fff 0%,rgba(0,122,255,.04) 100%); }
+.stat-card.purple { background:linear-gradient(135deg,#fff 0%,rgba(88,86,214,.04) 100%); }
+.stat-card.green  { background:linear-gradient(135deg,#fff 0%,rgba(52,199,89,.04) 100%); }
+.stat-card.yellow { background:linear-gradient(135deg,#fff 0%,rgba(255,149,0,.04) 100%); }
+.stat-card.blue:hover   { box-shadow:0 8px 32px rgba(0,122,255,.12),0 2px 8px rgba(0,122,255,.06);border-color:rgba(0,122,255,.2); }
+.stat-card.purple:hover { box-shadow:0 8px 32px rgba(88,86,214,.12),0 2px 8px rgba(88,86,214,.06);border-color:rgba(88,86,214,.2); }
+.stat-card.green:hover  { box-shadow:0 8px 32px rgba(52,199,89,.12),0 2px 8px rgba(52,199,89,.06);border-color:rgba(52,199,89,.2); }
+.stat-card.yellow:hover { box-shadow:0 8px 32px rgba(255,149,0,.12),0 2px 8px rgba(255,149,0,.06);border-color:rgba(255,149,0,.2); }
+
+/* ── Entrada de cards com stagger ── */
+.page.active .grid-4 .card,
+.page.active .grid-2 .card,
+.page.active .grid-3 .card {
+  animation:fadeInUp .32s cubic-bezier(.16,1,.3,1) both;
+}
+.page.active .grid-4 .card:nth-child(2),
+.page.active .grid-2 .card:nth-child(2),
+.page.active .grid-3 .card:nth-child(2) { animation-delay:.06s; }
+.page.active .grid-4 .card:nth-child(3),
+.page.active .grid-3 .card:nth-child(3) { animation-delay:.12s; }
+.page.active .grid-4 .card:nth-child(4) { animation-delay:.18s; }
+
+/* ── Borda gradiente nos cards no hover ── */
+.card { isolation:isolate; }
+.card::after {
+  content:'';position:absolute;inset:0;
+  border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  padding:1px;opacity:0;
+  transition:opacity .3s;pointer-events:none;
+}
+.card:hover::after { opacity:.35; }
+
+/* ── Botão primário — shimmer no hover ── */
+.btn-primary { position:relative;overflow:hidden; }
+.btn-primary::after {
+  content:'';position:absolute;
+  top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  transform:skewX(-15deg);
+  transition:left .5s;
+}
+.btn-primary:hover::after { left:140%; }
+
+/* ── Badge pendente — pulso suave ── */
+.badge.pendente { animation:softPulse 2.4s ease-in-out infinite; }
+
+/* ── Colab card premium hover ── */
+.colab-card:hover {
+  box-shadow:0 12px 40px rgba(0,122,255,.12),0 4px 12px rgba(0,122,255,.06);
+  border-color:rgba(0,122,255,.28);
+}
+
+/* ── Modal premium — entrada ── */
+.modal { animation:scaleIn .26s cubic-bezier(.16,1,.3,1); }
+
+/* ── Auth card premium shadow ── */
+.auth-card {
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.09),
+    0 8px 24px rgba(0,0,0,.06),
+    0 0 0 1px rgba(0,0,0,.04);
+}
+
+/* ── Topbar — linha gradiente inferior ── */
+.topbar { position:sticky;top:0; }
+.topbar::after {
+  content:'';position:absolute;
+  bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,var(--accent) 40%,var(--accent2) 60%,transparent 100%);
+  opacity:.12;
+}
+
+/* ── Log dots com glow ── */
+.log-dot.green { box-shadow:0 0 6px rgba(52,199,89,.5); }
+.log-dot.red   { box-shadow:0 0 6px rgba(255,59,48,.5); }
+.log-dot.blue  { box-shadow:0 0 6px rgba(0,122,255,.5); }
+
+/* ── Category chips com ícones ── */
+.cat-chip { gap:7px; }
+.chip-icon {
+  width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;opacity:.75;
+}
+.cat-chip.selected .chip-icon { opacity:1; }
+
+/* ── Politica cat icon — ícones SVG ── */
+.politica-cat-icon {
+  display:flex;align-items:center;justify-content:center;
+}
+.politica-cat-icon svg { stroke:var(--accent); }
+
+/* ── Sidebar collapse toggle button ── */
+.sidebar-collapse-btn {
+  background:none;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 6px;
+  cursor:pointer;
+  color:var(--text3);
+  display:flex;align-items:center;justify-content:center;
+  margin-left:auto;
+  flex-shrink:0;
+  transition:all .2s;
+}
+.sidebar-collapse-btn:hover { color:var(--accent);border-color:var(--accent); }
+.sidebar-logo {
+  display:flex;flex-direction:column;
+}
+.sidebar-logo .logo-mark { display:flex;align-items:center;width:100%; }
+.sidebar.collapsed .sidebar-collapse-btn svg {
+  transform:rotate(180deg);
+}
+
+/* ── Sidebar recolhível — desktop ── */
+.sidebar {
+  transition:width .28s cubic-bezier(.4,0,.2,1),min-width .28s;
+  overflow:hidden;
+}
+.sidebar.collapsed { width:64px; }
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .logo-sub,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .sidebar-saldo,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .logout-btn { display:none; }
+.sidebar.collapsed .nav-item { justify-content:center;padding:10px 0; }
+.sidebar.collapsed .nav-item.active::before { display:none; }
+.sidebar.collapsed .sidebar-user { justify-content:center; }
+.sidebar.collapsed .logo-mark { justify-content:center; }
+.sidebar.collapsed .sidebar-collapse-btn { margin-left:0; }
+
+.main { transition:margin-left .28s cubic-bezier(.4,0,.2,1); }
+.sidebar.collapsed ~ .main { margin-left:64px; }
+
+@media(max-width:768px){
+  .sidebar-collapse-btn { display:none; }
+  .sidebar.collapsed { width:248px; }
+  .sidebar.collapsed ~ .main { margin-left:0; }
+}
+
+/* ── Skeleton shimmer ── */
+.skeleton {
+  background:linear-gradient(90deg,var(--surface3) 25%,var(--surface2) 50%,var(--surface3) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:var(--radius-sm);
+}
+
+/* ── Scrollbar premium ── */
+::-webkit-scrollbar { width:5px;height:5px; }
+::-webkit-scrollbar-thumb { background:var(--border2);border-radius:99px; }
+::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+
+/* ── Nav item active — indicador premium ── */
+.nav-item.active {
+  font-weight:600;
+}
+
+/* ── Politica toggle premium ── */
+.politica-toggle { box-shadow:inset 0 1px 3px rgba(0,0,0,.08); }
+.politica-toggle.on { box-shadow:0 2px 8px rgba(0,122,255,.25); }
