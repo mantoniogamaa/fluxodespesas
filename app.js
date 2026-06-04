@@ -93,6 +93,7 @@ export async function initApp() {
     qsa,
     currency,
     categoryLabel,
+    escapeHtml,
     App: context.App,
     auth: context.auth,
     data: context.data,

@@ -116,7 +116,7 @@ const AuthService = {
 
   const PolicyService = {
 
-    checkLimit(policy, cat, valor, horario) {
+    checkLimit(policy, cat, valor, horario, tipoRefeicao) {
       const policyConfig = policy?.[cat];
       if (!policyConfig || !policyConfig.ativo) return null;
 
@@ -124,17 +124,17 @@ const AuthService = {
       let subLabel = null;
 
       if (cat === 'alimentacao') {
-        const hora = horario ? parseInt(horario.split(':')[0], 10) : new Date().getHours();
-        if (hora >= 11 && hora < 15) {
-          limite = policyConfig.almoco.limite;
-          subLabel = policyConfig.almoco.label;
-        } else if (hora >= 18 && hora < 23) {
-          limite = policyConfig.jantar.limite;
-          subLabel = policyConfig.jantar.label;
-        } else {
-          limite = policyConfig.outros.limite;
-          subLabel = policyConfig.outros.label;
+        // Prioridade: seleção explícita do usuário > hora informada > hora atual
+        let tipo = tipoRefeicao;
+        if (!tipo) {
+          const hora = horario ? parseInt(horario.split(':')[0], 10) : new Date().getHours();
+          if (hora >= 11 && hora < 15) tipo = 'almoco';
+          else if (hora >= 18 && hora < 23) tipo = 'jantar';
+          else tipo = 'outros';
         }
+        const cfg = policyConfig[tipo] || policyConfig.outros;
+        limite   = cfg?.limite;
+        subLabel = cfg?.label || (tipo === 'almoco' ? 'Almoço' : tipo === 'jantar' ? 'Jantar' : 'Outro horário');
       } else {
         limite = policyConfig.limite;
       }
@@ -263,6 +263,49 @@ const AuthService = {
   };
 
   const DespesaService = {
+    submitSingle(payload, actorName) {
+      const appState = state();
+      const verbaId = Number(payload.verbaId);
+      const fluxo = appState.data.verbas.find((item) => Number(item.id) === verbaId);
+      if (!fluxo) return { ok: false, message: 'Fluxo não encontrado. Selecione um fluxo ativo.' };
+      if (fluxo.status !== 'ativa') return { ok: false, message: 'Este fluxo está encerrado.' };
+
+      const valor = Number(payload.valor || 0);
+      if (!valor || valor <= 0) return { ok: false, message: 'Informe o valor da despesa.' };
+      if (!payload.estab) return { ok: false, message: 'Informe o estabelecimento.' };
+      if (!payload.cat) return { ok: false, message: 'Selecione a categoria.' };
+
+      const saldoDisponivel = fluxo.total - fluxo.usado;
+      if (valor > saldoDisponivel) return { ok: false, message: `Saldo insuficiente. Disponível: R$ ${saldoDisponivel.toFixed(2)}` };
+
+      fluxo.usado = +(fluxo.usado + valor).toFixed(2);
+
+      const expense = {
+        id: nextId(appState.data.despesas),
+        verbaid: verbaId,
+        colabId: Number(payload.colabId),
+        estab: payload.estab,
+        cat: payload.cat,
+        valor,
+        data: payload.data || today(),
+        horario: payload.horario || '',
+        tipoRefeicao: payload.tipoRefeicao || null,
+        centroCusto: payload.centroCusto || '',
+        obs: payload.obs || '',
+        justificativa: payload.justificativa || '',
+        fotoUrl: payload.fotoUrl || null,
+        politicaExcesso: payload.politicaExcesso || null,
+        status: 'Pendente',
+        lancadoEm: now(),
+      };
+      appState.data.despesas.push(expense);
+
+      const colaborador = appState.data.colaboradores.find((c) => Number(c.id) === expense.colabId);
+      addLog('blue', `${actorName} lançou despesa: ${expense.estab} (R$ ${valor.toFixed(2)}) — aguarda aprovação`);
+      FluxoState.save();
+      return { ok: true, item: expense, message: 'Despesa enviada para aprovação!' };
+    },
+
     approve(id, actorName) {
       const expense = state().data.despesas.find((item) => item.id === id);
       if (!expense) return { ok: false, message: 'Despesa não encontrada' };
@@ -338,8 +381,7 @@ const AuthService = {
       const items = clone(appState.ui.itensPrest || []);
       const totalItens = items.reduce((acc, item) => acc + Number(item.valor || 0), 0);
 
-      fluxo.usado += totalItens;
-      fluxo.status = 'encerrada';
+      fluxo.usado = +(fluxo.usado + totalItens).toFixed(2);
 
       const prestacao = {
         id: nextId(appState.data.prestacoes),

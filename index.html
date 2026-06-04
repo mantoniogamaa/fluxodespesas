@@ -441,8 +441,8 @@
 <div class="modal-overlay" id="modal-item-prest">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Adicionar Despesa</div>
-    <div class="modal-sub">Anexe o comprovante e preencha os dados</div>
+    <div class="modal-title">Lançar Despesa</div>
+    <div class="modal-sub">Fotografe o comprovante — o sistema lê os dados automaticamente</div>
     <div id="prest-foto-area" style="margin-bottom:14px">
       <div id="prest-foto-preview" style="display:none;position:relative;border-radius:9px;overflow:hidden;margin-bottom:9px">
         <img id="prest-img-preview" src="" style="width:100%;max-height:180px;object-fit:contain;background:var(--surface3);border-radius:9px;">
@@ -466,6 +466,11 @@
         <button type="button" data-action="abrir-galeria-prest" style="flex:1;padding:11px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Galeria</button>
       </div>
     </div>
+    <!-- Fluxo selecionado (informativo, sem duplicar o select da página) -->
+    <div id="pi-fluxo-info" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;justify-content:space-between">
+      <div><span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:700;display:block;margin-bottom:1px">Fluxo</span><span id="pi-fluxo-nome" style="font-weight:600;color:var(--text)">—</span></div>
+      <div style="text-align:right"><span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:700;display:block;margin-bottom:1px">Saldo</span><span id="pi-fluxo-saldo" style="font-weight:700;color:var(--green)">—</span></div>
+    </div>
     <div class="field-group"><div class="field-label">Categoria</div><div id="cat-chips"></div></div>
     <!-- Tipo de refeição — aparece só quando Alimentação é selecionada -->
     <div id="pi-tipo-refeicao" style="display:none;margin-bottom:14px">
@@ -481,7 +486,8 @@
       <div class="field-group"><div class="field-label">Valor (R$)</div><input class="field-input" id="pi-valor" type="number" inputmode="decimal" placeholder="0,00" style="font-size:17px;font-weight:700;color:var(--accent)" data-input="verificar-politica"></div>
       <div class="field-group"><div class="field-label">Data</div><input class="field-input" id="pi-data" type="date"></div>
     </div>
-    <div class="field-group"><div class="field-label">Estabelecimento / Descrição</div><input class="field-input" id="pi-desc" type="text" placeholder="Ex: Almoço com cliente, Shell posto km 42..." data-input="verificar-politica"></div>
+    <div class="field-group"><div class="field-label">Estabelecimento / Descrição</div><input class="field-input" id="pi-desc" type="text" placeholder="Ex: Restaurante Sabor, Shell posto km 42..." data-input="verificar-politica"></div>
+    <div class="field-group"><div class="field-label">Centro de Custo</div><div class="select-wrapper"><select class="field-input" id="pi-cc"><option value="">Selecione o centro de custo...</option></select></div></div>
     <!-- campo oculto para compatibilidade com verificação de horário -->
     <input type="hidden" id="pi-hora">
     <!-- aviso de política -->
@@ -493,9 +499,8 @@
       <div class="politica-aviso-body" id="politica-aviso-body"></div>
       <textarea class="politica-aviso-just" id="pi-justificativa" rows="2" placeholder="Justificativa obrigatória para aprovação do gestor..."></textarea>
     </div>
-    <!-- edição -->
     <input type="hidden" id="pi-edit-idx" value="-1">
-    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-item-prest">Cancelar</button><button class="btn-confirm" data-action="add-item-prest">+ Adicionar</button></div>
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-item-prest">Cancelar</button><button class="btn-confirm" data-action="add-item-prest" style="display:flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg> Lançar Despesa</button></div>
   </div>
 </div>
 
@@ -748,6 +753,14 @@
       <button class="btn-ghost" data-action="close-modal" data-modal-id="modal-colab-detalhe">Fechar</button>
       <button class="btn-confirm" id="btn-editar-colab" >Editar</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal visualizador de comprovante -->
+<div class="modal-overlay" id="modal-foto-comprovante" style="align-items:center;justify-content:center">
+  <div style="position:relative;max-width:90vw;max-height:90vh">
+    <button onclick="document.getElementById('modal-foto-comprovante').classList.remove('show')" style="position:absolute;top:-14px;right:-14px;z-index:10;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <img id="foto-comprovante-img" src="" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)">
   </div>
 </div>
 

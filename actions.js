@@ -12,6 +12,7 @@ export function createActions({
   setLoading,
   clearLoading,
   categoryLabel,
+  escapeHtml,
   App,
   auth,
   data,
@@ -83,46 +84,93 @@ async function handleLogout() {
       renderAll();
     }
 
-function handleAddPrestItem() {
+async function handleAddPrestItem() {
       const valor = Number(byId('pi-valor')?.value || 0);
       const dataDespesa = byId('pi-data')?.value || new Date().toISOString().slice(0, 10);
       const estab = (byId('pi-desc')?.value || '').trim();
       const horario = byId('pi-hora')?.value || '';
       const justificativa = (byId('pi-justificativa')?.value || '').trim();
-      const editIdx = Number(byId('pi-edit-idx')?.value || -1);
       const cat = ui().catSelecionada;
+      const tipoRef = ui().refeicaoTipo || null;
+      const centroCusto = (byId('pi-cc')?.value || '').trim();
+
       if (!cat) return showToast('Selecione uma categoria', 'warning');
       if (!valor) return showToast('Informe o valor da despesa', 'warning');
-      if (!estab) return showToast('Descreva a despesa', 'warning');
-      const tipoRef = ui().refeicaoTipo || null;
-      const policyCheck = FluxoBusiness.PolicyService.checkLimit(data().politica, cat, valor, horario, tipoRef);
-      if (policyCheck && !justificativa) return showToast('Despesa acima do limite precisa de justificativa', 'warning');
+      if (!estab) return showToast('Informe o estabelecimento', 'warning');
 
-      const item = {
+      const policyCheck = FluxoBusiness.PolicyService.checkLimit(data().politica, cat, valor, horario, tipoRef);
+      if (policyCheck && !justificativa) return showToast('Despesa acima do limite — informe a justificativa', 'warning');
+
+      const verbaId = Number(byId('prest-fluxo-select')?.value || ui().verbaSelecionadaId || 0);
+      const fluxo = data().verbas.find((v) => Number(v.id) === verbaId);
+      const colabId = fluxo?.colabId || currentUser()?.colabId;
+
+      const result = FluxoBusiness.DespesaService.submitSingle({
+        verbaId,
+        colabId,
+        estab,
         cat,
         valor,
         data: dataDespesa,
-        estab,
-        desc: estab,
         horario,
         tipoRefeicao: tipoRef,
+        centroCusto,
         justificativa,
         fotoUrl: ui().fotoPrestUrl,
         politicaExcesso: policyCheck,
-      };
-      const items = [...ui().itensPrest];
-      if (editIdx >= 0) items[editIdx] = item; else items.push(item);
-      FluxoBusiness.PrestacaoService.saveDraft(items);
-      FluxoState.setUi({ itensPrest: items, fotoPrestUrl: null, catSelecionada: null });
-      byId('pi-edit-idx').value = '-1';
+      }, currentUser()?.name || 'Colaborador');
+
+      if (!result.ok) return showToast(result.message, 'error');
+
+      FluxoState.setUi({ fotoPrestUrl: null, catSelecionada: null, refeicaoTipo: null });
       byId('pi-valor').value = '';
       byId('pi-desc').value = '';
+      if (byId('pi-cc')) byId('pi-cc').value = '';
       byId('pi-justificativa').value = '';
       byId('prest-img-preview').src = '';
       byId('prest-foto-preview').style.display = 'none';
+      const ocrArea = byId('prest-ocr-area');
+      if (ocrArea) ocrArea.style.display = 'none';
       closeModal('modal-item-prest');
+
+      if (isSupabaseEnabled()) {
+        setLoading?.('Enviando despesa...');
+        try {
+          const { saveDespesa, saveFluxo } = await import('./supabase-service.js');
+          await saveDespesa({
+            fluxo_id: verbaId,
+            estabelecimento: estab,
+            categoria: cat,
+            valor,
+            data_despesa: dataDespesa,
+            horario: horario || null,
+            centro_custo: centroCusto || null,
+            foto_url: ui().fotoPrestUrl || null,
+            justificativa: justificativa || null,
+          }, colabId);
+          if (fluxo) {
+            await saveFluxo({
+              id: verbaId,
+              colaborador_id: colabId,
+              motivo: fluxo.motivo,
+              total: fluxo.total,
+              usado: fluxo.usado,
+              status: fluxo.status,
+              data_inicio: fluxo.dataInicio,
+            }, currentUser()?.userId);
+          }
+          await syncFromSupabase();
+        } catch (err) {
+          console.error('Supabase saveDespesa error', err);
+          showToast('Salvo localmente — erro ao sincronizar', 'warning');
+        } finally {
+          clearLoading?.();
+        }
+      }
+
       persist();
-      showToast(editIdx >= 0 ? 'Item atualizado no rascunho' : 'Item adicionado ao rascunho');
+      showToast(result.message, 'success');
+      renderAll();
     }
 
 async function handleConfirmPrestacao() {
@@ -395,8 +443,8 @@ function openPrestModal() {
       byId('pi-edit-idx').value = '-1';
       byId('pi-valor').value = '';
       byId('pi-data').value = new Date().toISOString().slice(0, 10);
-      const now = new Date();
-      byId('pi-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const nowT = new Date();
+      byId('pi-hora').value = `${String(nowT.getHours()).padStart(2,'0')}:${String(nowT.getMinutes()).padStart(2,'0')}`;
       byId('pi-desc').value = '';
       byId('pi-justificativa').value = '';
       FluxoState.setUi({ catSelecionada: null, fotoPrestUrl: null, refeicaoTipo: null });
@@ -408,6 +456,34 @@ function openPrestModal() {
       byId('prest-img-preview').src = '';
       const ocrArea = byId('prest-ocr-area');
       if (ocrArea) ocrArea.style.display = 'none';
+
+      // Info do fluxo selecionado no topo do modal
+      const verbaId = Number(byId('prest-fluxo-select')?.value || ui().verbaSelecionadaId || 0);
+      const fluxo = data().verbas.find((v) => Number(v.id) === verbaId);
+      const nomeEl = byId('pi-fluxo-nome');
+      const saldoEl = byId('pi-fluxo-saldo');
+      if (nomeEl) nomeEl.textContent = fluxo?.motivo || '—';
+      if (saldoEl) {
+        const s = fluxo ? Math.max(fluxo.total - fluxo.usado, 0) : 0;
+        saldoEl.textContent = fluxo ? `R$ ${s.toFixed(2).replace('.',',')}` : '—';
+      }
+      const fluxoInfoEl = byId('pi-fluxo-info');
+      if (fluxoInfoEl) fluxoInfoEl.style.display = fluxo ? 'flex' : 'none';
+
+      // Preencher Centro de Custo com padrão do colaborador
+      const ccSel = byId('pi-cc');
+      if (ccSel) {
+        const ccs = data()._centrosCusto || [];
+        const colab = data().colaboradores.find((c) => Number(c.id) === Number(currentUser()?.colabId));
+        const defaultCc = colab?.cc || '';
+        if (ccs.length) {
+          ccSel.innerHTML = '<option value="">Selecione...</option>' +
+            ccs.filter(c => c.ativo !== false).map(c => `<option value="${c.codigo}" ${c.codigo === defaultCc ? 'selected' : ''}>${escapeHtml(c.codigo)} — ${escapeHtml(c.nome)}</option>`).join('');
+        } else if (defaultCc) {
+          ccSel.innerHTML = `<option value="${defaultCc}" selected>${defaultCc}</option>`;
+        }
+      }
+
       verifyPolicy();
       openModal('modal-item-prest');
     }

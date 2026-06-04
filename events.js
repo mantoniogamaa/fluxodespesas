@@ -147,6 +147,14 @@ export function bindEvents({
       case 'select-avatar-color': App.selectedAvatarColor = actionEl.dataset.color; renderAvatarPicker(); break;
       case 'selecionar-categoria': FluxoState.setUi({ catSelecionada: actionEl.dataset.cat, refeicaoTipo: null }); renderCategoriaChips(); verifyPolicy(); break;
       case 'selecionar-refeicao': FluxoState.setUi({ refeicaoTipo: actionEl.dataset.tipo }); renderCategoriaChips(); verifyPolicy(); break;
+      case 'ver-foto-despesa': {
+        const url = actionEl.dataset.url;
+        if (!url) break;
+        const modal = byId('modal-foto-comprovante');
+        const img = byId('foto-comprovante-img');
+        if (modal && img) { img.src = url; modal.classList.add('show'); }
+        break;
+      }
       case 'abrir-camera-prest': byId('prest-file-camera').click(); break;
       case 'abrir-galeria-prest': byId('prest-file-galeria').click(); break;
       case 'remover-foto-prest': {

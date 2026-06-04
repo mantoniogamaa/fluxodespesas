@@ -272,68 +272,115 @@ function historicoActions(item) {
 
     function historicoActionsNew(item) {
       if (!isGestor()) return '';
-      if (item.status !== 'Pendente') return '';
+      const fotoBtn = item.fotoUrl ? `<button title="Ver comprovante" style="width:28px;height:28px;border-radius:6px;background:var(--surface3);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="ver-foto-despesa" data-url="${item.fotoUrl}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>` : '';
+      if (item.status !== 'Pendente') return `<div style="display:flex;gap:6px;align-items:center">${fotoBtn}</div>`;
       return `<div style="display:flex;gap:6px;align-items:center">
-        <button title="Aprovar" style="width:28px;height:28px;border-radius:6px;background:rgba(52,199,89,.10);border:1px solid rgba(52,199,89,.2);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="aprovar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-        <button title="Rejeitar" style="width:28px;height:28px;border-radius:6px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="rejeitar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        ${fotoBtn}
+        <button title="Aprovar" style="width:28px;height:28px;border-radius:6px;background:rgba(21,128,61,.10);border:1px solid rgba(21,128,61,.2);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="aprovar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <button title="Rejeitar" style="width:28px;height:28px;border-radius:6px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="rejeitar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>`;
     }
 
 function renderPrestacao() {
+      const colabId = currentUser()?.colabId;
       const flows = data().verbas.filter((item) => scopeFilter(item.colabId) && item.status === 'ativa');
       const selectedId = Number(byId('prest-fluxo-select')?.value || ui().verbaSelecionadaId || flows[0]?.id || 0);
       FluxoState.setUi({ verbaSelecionadaId: selectedId || null });
       const selectedFluxo = flows.find((item) => Number(item.id) === Number(selectedId));
       const saldo = selectedFluxo ? Math.max(selectedFluxo.total - selectedFluxo.usado, 0) : 0;
-      const totalDraft = sum(ui().itensPrest, (item) => item.valor);
+      const pct = selectedFluxo?.total ? Math.round((selectedFluxo.usado / selectedFluxo.total) * 100) : 0;
+
+      const despesasFluxo = selectedFluxo
+        ? data().despesas.filter((d) => Number(d.verbaid) === Number(selectedId)).sort((a,b) => String(b.data).localeCompare(String(a.data)))
+        : [];
+
+      const noFluxo = !selectedFluxo;
 
       byId('prest-content').innerHTML = `
-        <div class="grid-2">
-          <div class="card">
-            <div class="table-header"><div class="section-title">Montar prestação</div><button class="btn-sm green" data-action="open-prest-modal"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar despesa</button></div>
-            <div class="field-group"><div class="field-label">Fluxo / Viagem</div><div class="select-wrapper"><select class="field-input" id="prest-fluxo-select">${flows.map((item) => `<option value="${item.id}" ${Number(item.id) === Number(selectedId) ? 'selected' : ''}>${escapeHtml(item.motivo)}</option>`).join('')}</select></div></div>
-            ${selectedFluxo ? `
-              <div class="prest-summary">
-                <div class="prest-title">Resumo do fluxo</div>
-                <div class="prest-row"><span>Crédito total</span><span class="prest-val">${currency(selectedFluxo.total)}</span></div>
-                <div class="prest-row"><span>Ja utilizado</span><span class="prest-val">${currency(selectedFluxo.usado)}</span></div>
-                <div class="prest-row saldo-pos"><span>Saldo atual</span><span class="prest-val">${currency(saldo)}</span></div>
-                <div class="prest-row"><span>Rascunho atual</span><span class="prest-val">${currency(totalDraft)}</span></div>
-              </div>` : `
-              <div class="empty-state" style="padding:24px 0">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                <div class="empty-text" style="margin-bottom:6px">Nenhum fluxo ativo</div>
-                <div style="font-size:12px;color:var(--text3);margin-bottom:16px">${isGestor() ? 'Crie um fluxo de credito para iniciar os lancamentos.' : 'Solicite ao seu gestor que crie um credito para voce.'}</div>
-                ${isGestor() ? `<button class="btn-primary" style="width:auto;padding:10px 20px;font-size:13px" data-action="open-nova-fluxo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar Fluxo de Credito</button>` : ''}
-              </div>`}
-            <div id="prest-itens-list">${renderPrestacaoItems()}</div>
-            <div class="modal-actions">
-              <button class="btn-ghost" data-action="limpar-rascunho">Limpar rascunho</button>
-              <button class="btn-confirm" data-action="abrir-enviar-prest" ${ui().itensPrest.length ? '' : 'disabled'}>Enviar prestação</button>
+        <div class="grid-2" style="align-items:start">
+          <div>
+            <!-- Seletor de fluxo -->
+            <div class="card" style="margin-bottom:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div class="section-title">Minhas Despesas</div>
+                ${!noFluxo ? `<button class="btn-primary" style="width:auto;padding:9px 18px;font-size:13px" data-action="open-prest-modal">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Nova Despesa
+                </button>` : ''}
+              </div>
+              ${flows.length > 1 ? `<div class="field-group" style="margin-bottom:14px"><div class="field-label">Fluxo de Crédito</div><div class="select-wrapper"><select class="field-input" id="prest-fluxo-select" data-change="render-prestacao">${flows.map((item) => `<option value="${item.id}" ${Number(item.id) === Number(selectedId) ? 'selected' : ''}>${escapeHtml(item.motivo)}</option>`).join('')}</select></div></div>` : flows.length === 1 ? `<input type="hidden" id="prest-fluxo-select" value="${flows[0].id}">` : ''}
+              ${selectedFluxo ? `
+                <div class="fluxo-balance-card">
+                  <div class="fluxo-balance-header">
+                    <div>
+                      <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">${escapeHtml(selectedFluxo.motivo)}</div>
+                      <div style="font-size:11px;color:var(--text3)">Início: ${dateBr(selectedFluxo.dataInicio)}</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div style="font-size:22px;font-weight:800;color:${saldo < selectedFluxo.total * 0.2 ? 'var(--red)' : 'var(--green)'};letter-spacing:-.5px">${currency(saldo)}</div>
+                      <div style="font-size:11px;color:var(--text3)">saldo disponível</div>
+                    </div>
+                  </div>
+                  <div class="progress-bar" style="margin:10px 0 6px"><div class="progress-fill ${pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green'}" style="width:${pct}%"></div></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+                    <span>${currency(selectedFluxo.usado)} utilizado</span>
+                    <span>${currency(selectedFluxo.total)} crédito total</span>
+                  </div>
+                </div>` : `
+                <div class="empty-state" style="padding:24px 0">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  <div class="empty-text" style="margin-bottom:6px">Nenhum fluxo ativo</div>
+                  <div style="font-size:12px;color:var(--text3);margin-bottom:16px">${isGestor() ? 'Crie um fluxo de crédito para iniciar os lançamentos.' : 'Solicite ao seu gestor que crie um crédito para você.'}</div>
+                  ${isGestor() ? `<button class="btn-primary" style="width:auto;padding:9px 18px;font-size:13px" data-action="open-nova-fluxo">Criar Fluxo de Crédito</button>` : ''}
+                </div>`}
             </div>
+            <!-- Lista de despesas deste fluxo -->
+            ${selectedFluxo ? `
+            <div class="card">
+              <div class="section-title" style="margin-bottom:14px">Lançamentos (${despesasFluxo.length})</div>
+              ${despesasFluxo.length ? despesasFluxo.map((item) => `
+                <div class="exp-card" style="margin-bottom:8px">
+                  <div class="exp-card-top">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      ${item.fotoUrl ? `<img src="${item.fotoUrl}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer;flex-shrink:0" data-action="ver-foto-despesa" data-url="${item.fotoUrl}" title="Ver comprovante">` : `<div style="width:40px;height:40px;border-radius:6px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+                      <div>
+                        <div class="exp-card-estab">${escapeHtml(item.estab)}</div>
+                        <div class="exp-card-meta">${dateBr(item.data)} · ${escapeHtml(categoryLabel(item.cat))}${item.centroCusto ? ' · ' + escapeHtml(item.centroCusto) : ''}</div>
+                      </div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0">
+                      <div class="exp-card-valor">${currency(item.valor)}</div>
+                    </div>
+                  </div>
+                  <div class="exp-card-meta" style="margin-top:8px">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      ${statusBadge(item.status)}
+                      ${item.justificativa ? `<span class="badge" style="background:rgba(217,119,6,.07);color:var(--gold);border:1px solid rgba(217,119,6,.15)">Com justificativa</span>` : ''}
+                    </div>
+                    <span style="font-size:11px;color:var(--text3)">${item.lancadoEm || ''}</span>
+                  </div>
+                </div>`).join('') : `<div class="empty-state" style="padding:24px"><div class="empty-text">Nenhuma despesa lançada neste fluxo.</div></div>`}
+            </div>` : ''}
           </div>
           <div class="card">
-            <div class="section-title" style="margin-bottom:14px">Orientações rápidas</div>
+            <div class="section-title" style="margin-bottom:14px">Como funciona</div>
             <div class="timeline">
-              <div class="tl-item"><div class="tl-dot" style="background:rgba(59,130,246,.12);color:var(--accent)">1</div><div class="tl-body"><div class="tl-title">Escolha o fluxo correto</div><div class="tl-sub">Sempre vincule a despesa ao crédito certo.</div></div></div>
-              <div class="tl-item"><div class="tl-dot" style="background:rgba(16,185,129,.12);color:var(--green)">2</div><div class="tl-body"><div class="tl-title">Anexe e descreva</div><div class="tl-sub">Mesmo antes do backend, trate comprovante e descrição como obrigatórios.</div></div></div>
-              <div class="tl-item"><div class="tl-dot" style="background:rgba(245,158,11,.12);color:var(--gold)">3</div><div class="tl-body"><div class="tl-title">Respeite a política</div><div class="tl-sub">Excesso de limite exige justificativa.</div></div></div>
+              <div class="tl-item"><div class="tl-dot" style="background:rgba(37,99,235,.10);color:var(--accent)">1</div><div class="tl-body"><div class="tl-title">Fotografe o comprovante</div><div class="tl-sub">O sistema lê automaticamente estabelecimento, data e valor via OCR.</div></div></div>
+              <div class="tl-item"><div class="tl-dot" style="background:rgba(21,128,61,.10);color:var(--green)">2</div><div class="tl-body"><div class="tl-title">Complete os dados</div><div class="tl-sub">Confirme categoria, centro de custo e valores identificados.</div></div></div>
+              <div class="tl-item"><div class="tl-dot" style="background:rgba(180,83,9,.10);color:var(--gold)">3</div><div class="tl-body"><div class="tl-title">Lance e aguarde aprovação</div><div class="tl-sub">Cada despesa vai individualmente para o gestor aprovar ou rejeitar.</div></div></div>
+              <div class="tl-item"><div class="tl-dot" style="background:rgba(220,38,38,.08);color:var(--red)">4</div><div class="tl-body"><div class="tl-title">Limite de política</div><div class="tl-sub">Despesas acima do limite precisam de justificativa para aprovação.</div></div></div>
             </div>
           </div>
         </div>`;
       renderCategoriaChips();
+      const selectEl = byId('prest-fluxo-select');
+      if (selectEl && !selectEl.dataset.listenerAdded) {
+        selectEl.addEventListener('change', () => renderPrestacao());
+        selectEl.dataset.listenerAdded = 'true';
+      }
     }
 
-function renderPrestacaoItems() {
-      if (!ui().itensPrest.length) {
-        return '<div class="empty-state"><div class="empty-text">Nenhuma despesa adicionada ao rascunho.</div></div>';
-      }
-      return ui().itensPrest.map((item, index) => `
-        <div class="exp-card">
-          <div class="exp-card-top"><div><div class="exp-card-estab">${escapeHtml(item.estab || item.desc || 'Despesa')}</div><div class="exp-card-meta">${dateBr(item.data)} · ${escapeHtml(categoryLabel(item.cat))}</div></div><div class="exp-card-valor">${currency(item.valor)}</div></div>
-          <div class="exp-card-meta">${item.justificativa ? `<span class="badge pendente">Com justificativa</span>` : '<span></span>'}<button class="btn-sm" data-action="remover-item-prest" data-index="${index}">Remover</button></div>
-        </div>`).join('');
-    }
+function renderPrestacaoItems() { return ''; }
 
 function renderRelatorios() {
       var printDate = byId('rel-print-date');
