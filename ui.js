@@ -63,7 +63,7 @@ function closeSidebar() {
       byId('sidebar-overlay')?.classList.remove('open');
     }
 
-function persist() { FluxoState.save(); renderAll(); }
+function persist() { FluxoState.save(); renderRuntime.renderAll?.(); }
 
 function ensureSeed() {
       FluxoState.bootstrap(SEED_STATE);

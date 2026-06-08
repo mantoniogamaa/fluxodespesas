@@ -155,6 +155,11 @@ export async function initApp() {
     handleSaveEdit: actions.handleSaveEdit,
     handleApproveExpense: actions.handleApproveExpense,
     handleRejectExpense: actions.handleRejectExpense,
+    handleReturnExpense: actions.handleReturnExpense,
+    abrirDecisaoDespesa: actions.abrirDecisaoDespesa,
+    confirmarDecisaoDespesa: actions.confirmarDecisaoDespesa,
+    abrirReenvioDespesa: actions.abrirReenvioDespesa,
+    confirmarReenvioDespesa: actions.confirmarReenvioDespesa,
     openEditExpense: actions.openEditExpense,
     openPrestModal: actions.openPrestModal,
     verifyPolicy: actions.verifyPolicy,
@@ -173,8 +178,7 @@ export async function initApp() {
     renderUsuarios: renderers.renderUsuarios,
   });
 
-  const demoMode = typeof window !== 'undefined' && window.isDemoMode && window.isDemoMode();
-  if (demoMode || !isSupabaseEnabled()) {
+  if (!isSupabaseEnabled()) {
     uiApi.ensureSeed();
   } else {
     FluxoState.bootstrap(null);

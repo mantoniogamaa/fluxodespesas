@@ -35,6 +35,11 @@ export function bindEvents({
   handleSaveEdit,
   handleApproveExpense,
   handleRejectExpense,
+  handleReturnExpense,
+  abrirDecisaoDespesa,
+  confirmarDecisaoDespesa,
+  abrirReenvioDespesa,
+  confirmarReenvioDespesa,
   openEditExpense,
   openPrestModal,
   verifyPolicy,
@@ -142,7 +147,11 @@ export function bindEvents({
       }
       case 'salvar-edicao': await handleSaveEdit(); break;
       case 'aprovar-despesa': await handleApproveExpense(actionEl.dataset.id); break;
-      case 'rejeitar-despesa': await handleRejectExpense(actionEl.dataset.id); break;
+      case 'rejeitar-despesa': abrirDecisaoDespesa(actionEl.dataset.id, 'rejeitar'); break;
+      case 'devolver-despesa': abrirDecisaoDespesa(actionEl.dataset.id, 'devolver'); break;
+      case 'confirmar-decisao-despesa': await confirmarDecisaoDespesa(); break;
+      case 'reenviar-despesa': abrirReenvioDespesa(actionEl.dataset.id); break;
+      case 'confirmar-reenvio-despesa': await confirmarReenvioDespesa(); break;
       case 'editar-despesa': openEditExpense(actionEl.dataset.id); break;
       case 'select-avatar-color': App.selectedAvatarColor = actionEl.dataset.color; renderAvatarPicker(); break;
       case 'selecionar-categoria': FluxoState.setUi({ catSelecionada: actionEl.dataset.cat, refeicaoTipo: null }); renderCategoriaChips(); verifyPolicy(); break;

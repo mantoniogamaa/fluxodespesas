@@ -28,7 +28,7 @@ export const SEED_STATE = {
     ],
     prestacoes: [],
     logAcoes: [
-      { type: 'blue', texto: 'Base demo carregada', time: '29/03/2026 09:00' },
+      { type: 'blue', texto: 'Base inicial carregada', time: '29/03/2026 09:00' },
     ],
   },
   ui: {

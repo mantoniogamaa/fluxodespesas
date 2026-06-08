@@ -280,6 +280,35 @@ export async function rejeitarDespesa(id, userId, motivo) {
   return data;
 }
 
+export async function devolverDespesa(id, userId, motivo) {
+  const client = ensureClient();
+  const { data, error } = await client.from('despesas')
+    .update({ status: 'Devolvido', aprovado_por: userId, aprovado_em: new Date().toISOString(), motivo_rejeicao: motivo || null, updated_at: new Date().toISOString() })
+    .eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function reenviarDespesa(id, payload) {
+  const client = ensureClient();
+  const { data, error } = await client.from('despesas')
+    .update({
+      estabelecimento: payload.estab,
+      categoria: payload.cat,
+      valor: payload.valor,
+      data_despesa: payload.data,
+      observacao: payload.obs || null,
+      status: 'Pendente',
+      aprovado_por: null,
+      aprovado_em: null,
+      motivo_rejeicao: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
 // ============================================================
 // LOG DE AÇÕES
 // ============================================================
@@ -361,14 +390,29 @@ export async function updateSupabaseUsuario(id, payload) {
   return data;
 }
 
-// Nota: createSupabaseUsuario cria o auth.user via Admin API — no plano free
-// o gestor deve criar o usuário no painel do Supabase (Authentication → Users)
-// e depois a função criar_gestor_inicial / insert manual em usuarios é usada.
-// Aqui simulamos inserindo direto na tabela (requer service_role no backend).
 export async function createSupabaseUsuario(payload) {
-  // No frontend com anon key não é possível criar auth.users diretamente.
-  // Orientamos o gestor a criar via painel e depois associar.
-  throw new Error('Para criar usuários, acesse o painel do Supabase em Authentication → Users, crie o usuário e depois execute: SELECT public.criar_gestor_inicial(\'UUID\', \'email\', \'Nome\', \'Empresa\');');
+  const client = ensureClient();
+  const { data: { session }, error: sessErr } = await client.auth.getSession();
+  if (sessErr || !session) throw new Error('Sessão não encontrada. Faça login novamente.');
+
+  const cfg = (globalThis.FLUXO_CONFIG || {});
+  const res = await fetch(`${cfg.supabaseUrl}/functions/v1/create-user`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email:    payload.email,
+      password: payload.senha,
+      nome:     payload.nome,
+      role:     payload.role || 'colaborador',
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Erro ao criar usuário');
+  return data.user;
 }
 
 // ============================================================

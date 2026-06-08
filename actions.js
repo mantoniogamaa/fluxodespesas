@@ -395,16 +395,121 @@ async function handleApproveExpense(id) {
       renderAll();
     }
 
-async function handleRejectExpense(id) {
-      const result = FluxoBusiness.DespesaService.reject(Number(id), currentUser()?.name || 'Sistema');
+async function syncFluxoAfterEstorno(despesa) {
+      const fluxo = data().verbas.find(v => Number(v.id) === Number(despesa.verbaid));
+      if (!fluxo) return;
+      const { saveFluxo } = await import('./supabase-service.js');
+      await saveFluxo({
+        id: fluxo.id,
+        colaborador_id: fluxo.colabId,
+        motivo: fluxo.motivo,
+        total: fluxo.total,
+        usado: fluxo.usado,
+        status: fluxo.status,
+        data_inicio: fluxo.dataInicio,
+      }, currentUser()?.userId);
+    }
+
+async function handleRejectExpense(id, motivo) {
+      const result = FluxoBusiness.DespesaService.reject(Number(id), currentUser()?.name || 'Sistema', motivo);
       if (!result.ok) return showToast(result.message, 'error');
       if (isSupabaseEnabled()) {
         setLoading?.('Rejeitando...');
         try {
-          const { rejeitarDespesa, saveFluxo } = await import('./supabase-service.js');
-          await rejeitarDespesa(Number(id), currentUser()?.userId, null);
-          const despesa = result.item;
-          const fluxo = data().verbas.find(v => Number(v.id) === Number(despesa.verbaid));
+          const { rejeitarDespesa } = await import('./supabase-service.js');
+          await rejeitarDespesa(Number(id), currentUser()?.userId, motivo || null);
+          await syncFluxoAfterEstorno(result.item);
+          await syncFromSupabase();
+        } catch (err) {
+          console.error('Supabase rejeitarDespesa error', err);
+        } finally {
+          clearLoading?.();
+        }
+      }
+      persist();
+      showToast(result.message, 'warning');
+      renderAll();
+    }
+
+async function handleReturnExpense(id, motivo) {
+      const result = FluxoBusiness.DespesaService.returnForCorrection(Number(id), currentUser()?.name || 'Sistema', motivo);
+      if (!result.ok) return showToast(result.message, 'error');
+      if (isSupabaseEnabled()) {
+        setLoading?.('Devolvendo...');
+        try {
+          const { devolverDespesa } = await import('./supabase-service.js');
+          await devolverDespesa(Number(id), currentUser()?.userId, motivo || null);
+          await syncFluxoAfterEstorno(result.item);
+          await syncFromSupabase();
+        } catch (err) {
+          console.error('Supabase devolverDespesa error', err);
+        } finally {
+          clearLoading?.();
+        }
+      }
+      persist();
+      showToast(result.message, 'warning');
+      renderAll();
+    }
+
+function abrirDecisaoDespesa(id, tipo) {
+      byId('decisao-id').value = id;
+      byId('decisao-tipo').value = tipo;
+      byId('decisao-motivo').value = '';
+      const isDevolver = tipo === 'devolver';
+      byId('decisao-titulo').textContent = isDevolver ? 'Devolver Despesa' : 'Rejeitar Despesa';
+      byId('decisao-subtitulo').textContent = isDevolver
+        ? 'Explique o que precisa ser corrigido — o colaborador poderá editar e reenviar.'
+        : 'Recusa definitiva. Informe o motivo — o colaborador será notificado.';
+      byId('decisao-confirmar-btn').textContent = isDevolver ? 'Devolver' : 'Rejeitar';
+      openModal('modal-decisao-despesa');
+    }
+
+async function confirmarDecisaoDespesa() {
+      const id = Number(byId('decisao-id')?.value || 0);
+      const tipo = byId('decisao-tipo')?.value || 'rejeitar';
+      const motivo = (byId('decisao-motivo')?.value || '').trim();
+      if (!motivo) return showToast('Informe o motivo para continuar.', 'error');
+      closeModal('modal-decisao-despesa');
+      if (tipo === 'devolver') await handleReturnExpense(id, motivo);
+      else await handleRejectExpense(id, motivo);
+    }
+
+function abrirReenvioDespesa(id) {
+      const item = data().despesas.find((despesa) => Number(despesa.id) === Number(id));
+      if (!item) return;
+      byId('reenviar-id').value = item.id;
+      byId('reenviar-estab').value = item.estab;
+      byId('reenviar-valor').value = item.valor;
+      byId('reenviar-data').value = item.data;
+      byId('reenviar-cat').value = categoryLabel(item.cat);
+      byId('reenviar-obs').value = item.obs || '';
+      byId('reenviar-motivo-display').textContent = item.motivoRejeicao
+        ? `Motivo da devolução: ${item.motivoRejeicao}`
+        : 'Ajuste os dados antes de reenviar para aprovação.';
+      openModal('modal-reenviar');
+    }
+
+async function confirmarReenvioDespesa() {
+      const id = Number(byId('reenviar-id')?.value || 0);
+      const catLabel = byId('reenviar-cat')?.value || 'Outros';
+      const cat = CATEGORIES.find((item) => item.label === catLabel)?.id || 'outros';
+      const payload = {
+        estab: byId('reenviar-estab')?.value || '',
+        valor: Number(byId('reenviar-valor')?.value || 0),
+        data: byId('reenviar-data')?.value || '',
+        cat,
+        obs: byId('reenviar-obs')?.value || '',
+      };
+      const result = FluxoBusiness.DespesaService.resubmit(id, payload, currentUser()?.name || 'Sistema');
+      if (!result.ok) return showToast(result.message, 'error');
+      closeModal('modal-reenviar');
+      if (isSupabaseEnabled()) {
+        setLoading?.('Reenviando...');
+        try {
+          const { reenviarDespesa, saveFluxo } = await import('./supabase-service.js');
+          await reenviarDespesa(id, payload);
+          const fluxo = data().verbas.find(v => Number(v.id) === Number(result.item.verbaid));
           if (fluxo) {
             await saveFluxo({
               id: fluxo.id,
@@ -418,13 +523,13 @@ async function handleRejectExpense(id) {
           }
           await syncFromSupabase();
         } catch (err) {
-          console.error('Supabase rejeitarDespesa error', err);
+          console.error('Supabase reenviarDespesa error', err);
         } finally {
           clearLoading?.();
         }
       }
       persist();
-      showToast(result.message, 'warning');
+      showToast(result.message, 'success');
       renderAll();
     }
 
@@ -689,6 +794,11 @@ function preencherUsuarioForm(id) {
     handleSaveEdit,
     handleApproveExpense,
     handleRejectExpense,
+    handleReturnExpense,
+    abrirDecisaoDespesa,
+    confirmarDecisaoDespesa,
+    abrirReenvioDespesa,
+    confirmarReenvioDespesa,
     openEditExpense,
     openPrestModal,
     verifyPolicy,

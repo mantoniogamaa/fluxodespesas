@@ -111,6 +111,34 @@ test('DespesaService.reject reverts used amount on related fluxo', () => {
   assert.equal(after, before - 120);
 });
 
+test('DespesaService.returnForCorrection reverts saldo and sets status Devolvido with motivo', () => {
+  resetApp();
+  const before = FluxoState.get().data.verbas.find((item) => item.id === 3).usado;
+
+  const result = FluxoBusiness.DespesaService.returnForCorrection(4, 'Gestor Teste', 'Falta nota fiscal');
+
+  assert.equal(result.ok, true);
+  assert.equal(result.item.status, 'Devolvido');
+  assert.equal(result.item.motivoRejeicao, 'Falta nota fiscal');
+  const after = FluxoState.get().data.verbas.find((item) => item.id === 3).usado;
+  assert.equal(after, before - 120);
+});
+
+test('DespesaService.resubmit corrects a Devolvido expense and reserves saldo again', () => {
+  resetApp();
+  FluxoBusiness.DespesaService.returnForCorrection(4, 'Gestor Teste', 'Valor incorreto');
+  const usadoAposDevolucao = FluxoState.get().data.verbas.find((item) => item.id === 3).usado;
+
+  const result = FluxoBusiness.DespesaService.resubmit(4, { valor: 150, estab: 'Posto Ipiranga' }, 'Colaborador Teste');
+
+  assert.equal(result.ok, true);
+  assert.equal(result.item.status, 'Pendente');
+  assert.equal(result.item.motivoRejeicao, '');
+  assert.equal(result.item.valor, 150);
+  const after = FluxoState.get().data.verbas.find((item) => item.id === 3).usado;
+  assert.equal(after, usadoAposDevolucao + 150);
+});
+
 test('PrestacaoService.saveDraft and importDraft move draft safely into UI state', () => {
   resetApp();
   const draft = [{ estab: 'Hotel', valor: 200, cat: 'hospedagem' }];

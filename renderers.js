@@ -255,7 +255,7 @@ function historicoRow(item) {
           <td><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span></td>
           <td style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px">${currency(item.valor)}</td>
           <td>${statusBadge(item.status)}</td>
-          <td>${isGestor() ? historicoActionsNew(item) : ''}</td>
+          <td>${isGestor() ? historicoActionsNew(item) : colaboradorAcoesDevolucao(item)}</td>
         </tr>`;
     }
 
@@ -265,8 +265,16 @@ function historicoCard(item) {
         <div class="exp-card">
           <div class="exp-card-top"><div><div class="exp-card-estab">${escapeHtml(item.estab)}</div><div class="exp-card-meta">${escapeHtml(colab?.nome || '—')} · ${dateBr(item.data)}</div></div><div class="exp-card-valor">${currency(item.valor)}</div></div>
           <div class="exp-card-meta"><span class="badge ${item.cat}">${escapeHtml(categoryLabel(item.cat))}</span>${statusBadge(item.status)}</div>
-          ${isGestor() ? `<div class="exp-card-actions">${historicoActions(item)}</div>` : ''}
+          ${isGestor() ? `<div class="exp-card-actions">${historicoActions(item)}</div>` : `<div class="exp-card-actions">${colaboradorAcoesDevolucao(item)}</div>`}
         </div>`;
+    }
+
+function colaboradorAcoesDevolucao(item) {
+      if (isGestor() || item.status !== 'Devolvido') return '';
+      const motivoHtml = item.motivoRejeicao
+        ? `<div style="font-size:11px;color:var(--accent2);margin-top:4px;line-height:1.4"><b>Motivo:</b> ${escapeHtml(item.motivoRejeicao)}</div>`
+        : '';
+      return `${motivoHtml}<button class="btn-sm" data-action="reenviar-despesa" data-id="${item.id}" style="margin-top:6px">Corrigir e reenviar</button>`;
     }
 
 function historicoActions(item) {
@@ -275,6 +283,7 @@ function historicoActions(item) {
       if (item.status === 'Pendente') {
         actions.push(`<button class="btn-sm green" data-action="aprovar-despesa" data-id="${item.id}">Aprovar</button>`);
         actions.push(`<button class="btn-sm" data-action="editar-despesa" data-id="${item.id}">Editar</button>`);
+        actions.push(`<button class="btn-sm" data-action="devolver-despesa" data-id="${item.id}">Devolver</button>`);
         actions.push(`<button class="btn-sm" data-action="rejeitar-despesa" data-id="${item.id}">Rejeitar</button>`);
       }
       return actions.join(' ');
@@ -287,6 +296,7 @@ function historicoActions(item) {
       return `<div style="display:flex;gap:6px;align-items:center">
         ${fotoBtn}
         <button title="Aprovar" style="width:28px;height:28px;border-radius:6px;background:rgba(21,128,61,.10);border:1px solid rgba(21,128,61,.2);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="aprovar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <button title="Devolver" style="width:28px;height:28px;border-radius:6px;background:rgba(167,139,250,.10);border:1px solid rgba(167,139,250,.2);color:var(--accent2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="devolver-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></button>
         <button title="Rejeitar" style="width:28px;height:28px;border-radius:6px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" data-action="rejeitar-despesa" data-id="${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>`;
     }
@@ -666,7 +676,7 @@ function showColabDetail(id) {
 function statusBadge(status, labelOverride) {
       const label = labelOverride || status;
       const normal = String(status || '').toLowerCase();
-      const klass = normal.includes('apro') ? 'aprovado' : normal.includes('rej') ? 'rejeitado' : 'pendente';
+      const klass = normal.includes('apro') ? 'aprovado' : normal.includes('devol') ? 'devolvido' : normal.includes('rej') ? 'rejeitado' : 'pendente';
       return `<span class="badge ${klass}">${escapeHtml(label)}</span>`;
     }
 
@@ -832,6 +842,10 @@ function renderAprovacoes() {
                         <button class="btn-rejeitar" data-action="rejeitar-despesa" data-id="${item.id}">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                           Rejeitar
+                        </button>
+                        <button class="btn-devolver" data-action="devolver-despesa" data-id="${item.id}">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                          Devolver
                         </button>
                         <button class="btn-aprovar" data-action="aprovar-despesa" data-id="${item.id}">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>

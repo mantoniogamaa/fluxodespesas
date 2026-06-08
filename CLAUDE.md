@@ -28,6 +28,17 @@ Não há bundler, transpilador ou etapa de build. Qualquer mudança nos arquivos
 - **Deploy**: GitHub Pages — branch `main`, raiz `/`
 - **URL produção**: `https://mantoniogamaa.github.io/fluxodespesas/`
 
+### Design System (styles.css)
+- **Tema**: Dark — inspirado no projeto Frete
+- **Fundo**: `#0A0A0C` com dois overlays fixos: gradiente radial (indigo/verde/roxo) + grid sutil 40×40px via `body::before` / `body::after`
+- **Accent**: indigo `#5E6AD2` (hover `#6872D9`); secundário roxo `#A78BFA`
+- **Semânticas**: verde `#34D399`, vermelho `#F87171`, gold `#F59E0B`
+- **Superfícies**: `--surface #111214` → `--surface3 #1C1E22`; bordas translúcidas `rgba(255,255,255,.08/.13)`
+- **Cards**: glassmorphism — `background:rgba(255,255,255,.035)` + `backdrop-filter:blur(8px)`
+- **Stat cards**: faixa de 2px colorida no topo via `::before` (gradiente por variante: blue/green/yellow/purple)
+- **Topbar**: `rgba(10,10,12,.88)` + `backdrop-filter:blur(20px)`
+- **Print**: força tema claro e desativa os overlays de body
+
 ### Inicialização (`app.js → initApp`)
 O ponto de entrada real é `main.js` (carregado pelo `index.html` como `type="module"`), que chama `initApp()` de `app.js`. A inicialização segue esta ordem:
 

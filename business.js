@@ -55,25 +55,6 @@ const AuthService = {
         }
       }
 
-      const demoGestor = 'demo.gestor@empresa';
-      const demoColaborador = 'demo.colaborador@empresa';
-      const demoSenha = '12345';
-
-      if (normalizedEmail === demoGestor && password === demoSenha) {
-        const user = { email: normalizedEmail, role: 'gestor', name: 'Gestor Demo', colabId: null };
-        FluxoState.setAuth({ currentRole: 'gestor', currentUser: user });
-        FluxoState.save();
-        return { ok: true, user };
-      }
-
-      if (normalizedEmail === demoColaborador && password === demoSenha) {
-        const fallback = appState.data.colaboradores[0];
-        const user = { email: normalizedEmail, role: 'colaborador', name: fallback?.nome || 'Colaborador Demo', colabId: fallback?.id || null };
-        FluxoState.setAuth({ currentRole: 'colaborador', currentUser: user });
-        FluxoState.save();
-        return { ok: true, user };
-      }
-
       if (currentRole === 'gestor') {
         return { ok: false, message: 'Credenciais inválidas' };
       }
@@ -326,18 +307,61 @@ const AuthService = {
       return { ok: true, item: expense, message: 'Despesa aprovada!' };
     },
 
-    reject(id, actorName) {
+    reject(id, actorName, motivo) {
       const appState = state();
       const expense = appState.data.despesas.find((item) => item.id === id);
       if (!expense) return { ok: false, message: 'Despesa não encontrada' };
 
       expense.status = 'Rejeitado';
+      expense.motivoRejeicao = motivo || '';
       const fluxo = appState.data.verbas.find((item) => item.id === expense.verbaid);
       if (fluxo) fluxo.usado = Math.max(0, fluxo.usado - expense.valor);
 
       const colaborador = appState.data.colaboradores.find((item) => item.id === expense.colabId);
       addLog('red', `${actorName} rejeitou despesa de ${colaborador?.nome || 'colaborador'}: ${expense.estab} (R$ ${expense.valor.toFixed(2)}) — valor estornado`);
       return { ok: true, item: expense, message: 'Despesa rejeitada!' };
+    },
+
+    returnForCorrection(id, actorName, motivo) {
+      const appState = state();
+      const expense = appState.data.despesas.find((item) => item.id === id);
+      if (!expense) return { ok: false, message: 'Despesa não encontrada' };
+
+      expense.status = 'Devolvido';
+      expense.motivoRejeicao = motivo || '';
+      const fluxo = appState.data.verbas.find((item) => item.id === expense.verbaid);
+      if (fluxo) fluxo.usado = Math.max(0, fluxo.usado - expense.valor);
+
+      const colaborador = appState.data.colaboradores.find((item) => item.id === expense.colabId);
+      addLog('gold', `${actorName} devolveu despesa de ${colaborador?.nome || 'colaborador'}: ${expense.estab} (R$ ${expense.valor.toFixed(2)}) para correção — valor estornado`);
+      return { ok: true, item: expense, message: 'Despesa devolvida para correção!' };
+    },
+
+    resubmit(id, payload, actorName) {
+      const appState = state();
+      const expense = appState.data.despesas.find((item) => item.id === id);
+      if (!expense) return { ok: false, message: 'Despesa não encontrada' };
+      if (expense.status !== 'Devolvido') return { ok: false, message: 'Apenas despesas devolvidas podem ser reenviadas.' };
+
+      const newValue = Number(payload.valor || expense.valor);
+      if (!newValue || newValue <= 0) return { ok: false, message: 'Informe o valor da despesa.' };
+
+      const fluxo = appState.data.verbas.find((item) => item.id === expense.verbaid);
+      const saldoDisponivel = fluxo ? fluxo.total - fluxo.usado : Infinity;
+      if (newValue > saldoDisponivel) return { ok: false, message: `Saldo insuficiente. Disponível: R$ ${saldoDisponivel.toFixed(2)}` };
+
+      if (fluxo) fluxo.usado = +(fluxo.usado + newValue).toFixed(2);
+      expense.valor = newValue;
+      expense.estab = payload.estab || expense.estab;
+      expense.data = payload.data || expense.data;
+      expense.obs = payload.obs || '';
+      expense.cat = payload.cat || expense.cat;
+      expense.status = 'Pendente';
+      expense.motivoRejeicao = '';
+      expense.lancadoEm = now();
+
+      addLog('blue', `${actorName} corrigiu e reenviou despesa: ${expense.estab} (R$ ${newValue.toFixed(2)}) — aguarda aprovação`);
+      return { ok: true, item: expense, message: 'Despesa corrigida e reenviada para aprovação!' };
     },
 
     edit(id, payload, actorName) {

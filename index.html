@@ -59,10 +59,6 @@
 
 <!-- APP -->
 <div id="app">
-  <div id="demo-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:#854d0e;color:#fef08a;font-size:13px;font-weight:500;position:sticky;top:0;z-index:999;">
-    <span style="display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Modo demonstração ativo — dados fictícios para teste</span>
-    <button onclick="window.toggleDemoMode()" style="background:#713f12;border:none;color:#fef08a;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Desativar demo</button>
-  </div>
   <div class="sidebar-overlay" id="sidebar-overlay" data-action="close-sidebar"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
@@ -540,6 +536,35 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-decisao-despesa">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="decisao-titulo">Rejeitar Despesa</div>
+    <div class="modal-sub" id="decisao-subtitulo">Informe o motivo da decisão — o colaborador será notificado.</div>
+    <input type="hidden" id="decisao-id">
+    <input type="hidden" id="decisao-tipo">
+    <div class="field-group"><div class="field-label">Motivo</div><textarea class="field-input" id="decisao-motivo" rows="3" placeholder="Explique o motivo para o colaborador..." style="resize:none;line-height:1.5"></textarea></div>
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-decisao-despesa">Cancelar</button><button class="btn-confirm" id="decisao-confirmar-btn" data-action="confirmar-decisao-despesa">Confirmar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-reenviar">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Corrigir e Reenviar</div>
+    <div class="modal-sub" id="reenviar-motivo-display">Ajuste os dados antes de reenviar para aprovação.</div>
+    <input type="hidden" id="reenviar-id">
+    <div class="field-group"><div class="field-label">Estabelecimento</div><input class="field-input" id="reenviar-estab" type="text"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field-group"><div class="field-label">Valor (R$)</div><input class="field-input" id="reenviar-valor" type="number" inputmode="decimal"></div>
+      <div class="field-group"><div class="field-label">Data</div><input class="field-input" id="reenviar-data" type="date"></div>
+    </div>
+    <div class="field-group"><div class="field-label">Categoria</div><div class="select-wrapper"><select class="field-input" id="reenviar-cat"><option>Alimentação</option><option>Transporte</option><option>Hospedagem</option><option>Combustível</option><option>Estacionamento</option><option>Uber / Taxi</option><option>Passagem</option><option>Pedágio</option><option>Material</option><option>Outros</option><option>Reembolso</option></select></div></div>
+    <div class="field-group"><div class="field-label">Observação</div><input class="field-input" id="reenviar-obs" type="text" placeholder="Opcional..."></div>
+    <div class="modal-actions"><button class="btn-ghost" data-action="close-modal" data-modal-id="modal-reenviar">Cancelar</button><button class="btn-confirm" data-action="confirmar-reenvio-despesa">Reenviar para Aprovação</button></div>
+  </div>
+</div>
+
 <!-- Modal Centro de Custo -->
 <div class="modal-overlay" id="modal-centrocusto">
   <div class="modal">
@@ -779,39 +804,6 @@
 <script src="./config.js"></script>
 <script type="module" src="./main.js"></script>
 
-
-<script>
-(function() {
-  const DEMO_KEY = 'fluxo_demo_mode';
-  const isDemo = localStorage.getItem(DEMO_KEY) === 'true';
-
-  window.isDemoMode = function() { return localStorage.getItem(DEMO_KEY) === 'true'; };
-
-  window.toggleDemoMode = function() {
-    const current = localStorage.getItem(DEMO_KEY) === 'true';
-    if (current) {
-      localStorage.removeItem(DEMO_KEY);
-      localStorage.removeItem('fluxo_app_state_v3');
-      localStorage.removeItem('fluxo_prestacao_rascunho_v3');
-    } else {
-      localStorage.setItem(DEMO_KEY, 'true');
-    }
-    location.reload();
-  };
-
-  function updateDemoUI() {
-    const demo = localStorage.getItem(DEMO_KEY) === 'true';
-    const banner = document.getElementById('demo-banner');
-    const btn = document.getElementById('btn-demo-toggle');
-    if (banner) banner.style.display = demo ? 'flex' : 'none';
-    if (btn) btn.innerHTML = demo
-      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Desativar demonstração'
-      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Ver demonstração';
-  }
-
-  document.addEventListener('DOMContentLoaded', updateDemoUI);
-})();
-</script>
 
 </body>
 </html>
