@@ -312,6 +312,31 @@ async function handleSaveColab() {
       showToast(result.message, 'success');
     }
 
+async function persistPolitica(nextPolicy) {
+      const result = FluxoBusiness.PolicyService.saveLimits(nextPolicy, currentUser()?.name || 'Sistema');
+      data().politica = result;
+      if (isSupabaseEnabled()) {
+        try {
+          const { savePolitica } = await import('./supabase-service.js');
+          const politicas = data()._politicas || [];
+          const politicaPadrao = politicas.find(p => /^padr[aã]o$/i.test(p.nome || '')) || politicas[0];
+          if (politicaPadrao?.id) {
+            await savePolitica({ ...politicaPadrao, limites: nextPolicy });
+          } else {
+            await savePolitica({ nome: 'Padrão', limites: nextPolicy, ativo: true });
+          }
+          await syncFromSupabase();
+        } catch (err) {
+          console.error('Supabase savePolitica error', err);
+          persist();
+          showToast('Falha ao sincronizar a política com o servidor — a alteração pode não persistir', 'error');
+          return false;
+        }
+      }
+      persist();
+      return true;
+    }
+
 async function handleSavePolitica() {
       const nextPolicy = JSON.parse(JSON.stringify(data().politica || DEFAULT_POLICY));
       qsa('[data-policy-field]').forEach((input) => {
@@ -322,23 +347,17 @@ async function handleSavePolitica() {
         }
         pointer[path[0]] = Number(input.value || 0);
       });
-      const result = FluxoBusiness.PolicyService.saveLimits(nextPolicy, currentUser()?.name || 'Sistema');
-      data().politica = result;
-      if (isSupabaseEnabled()) {
-        try {
-          const { savePolitica } = await import('./supabase-service.js');
-          const politicas = data()._politicas || [];
-          const politicaPadrao = politicas.find(p => p.nome === 'Padrao') || politicas[0];
-          if (politicaPadrao?.id) {
-            await savePolitica({ ...politicaPadrao, limites: nextPolicy });
-            await syncFromSupabase();
-          }
-        } catch (err) {
-          console.error('Supabase savePolitica error', err);
-        }
-      }
-      persist();
-      showToast('Política atualizada', 'success');
+      const ok = await persistPolitica(nextPolicy);
+      if (ok) showToast('Política atualizada', 'success');
+    }
+
+async function handleTogglePolitica(cat) {
+      const current = data().politica || DEFAULT_POLICY;
+      if (!current[cat]) return;
+      const nextPolicy = JSON.parse(JSON.stringify(current));
+      nextPolicy[cat].ativo = !nextPolicy[cat].ativo;
+      await persistPolitica(nextPolicy);
+      renderAll();
     }
 
 async function handleSaveEdit() {
@@ -791,6 +810,7 @@ function preencherUsuarioForm(id) {
     handleCreateFluxo,
     handleSaveColab,
     handleSavePolitica,
+    handleTogglePolitica,
     handleSaveEdit,
     handleApproveExpense,
     handleRejectExpense,

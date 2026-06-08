@@ -152,6 +152,7 @@ export async function initApp() {
     handleCreateFluxo: actions.handleCreateFluxo,
     handleSaveColab: actions.handleSaveColab,
     handleSavePolitica: actions.handleSavePolitica,
+    handleTogglePolitica: actions.handleTogglePolitica,
     handleSaveEdit: actions.handleSaveEdit,
     handleApproveExpense: actions.handleApproveExpense,
     handleRejectExpense: actions.handleRejectExpense,

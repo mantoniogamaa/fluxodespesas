@@ -424,7 +424,7 @@ export async function loadFullState() {
     loadColaboradores(), loadDepartamentos(), loadCentrosCusto(),
     loadPoliticas(), loadFluxos(), loadDespesas(), loadLogAcoes(), loadUsuarios(),
   ]);
-  const politicaPadrao = politicas.find(p => p.nome === 'Padrao') || politicas[0];
+  const politicaPadrao = politicas.find(p => /^padr[aã]o$/i.test(p.nome || '')) || politicas[0];
   return {
     data: {
       colaboradores:   colaboradores.map(mapColaborador),

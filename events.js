@@ -32,6 +32,7 @@ export function bindEvents({
   handleCreateFluxo,
   handleSaveColab,
   handleSavePolitica,
+  handleTogglePolitica,
   handleSaveEdit,
   handleApproveExpense,
   handleRejectExpense,
@@ -139,12 +140,7 @@ export function bindEvents({
         }
         break;
       }
-      case 'toggle-politica': {
-        const cat = actionEl.dataset.cat;
-        const pol = FluxoState.get().data.politica;
-        if (pol && pol[cat]) { pol[cat].ativo = !pol[cat].ativo; persist(); }
-        break;
-      }
+      case 'toggle-politica': await handleTogglePolitica(actionEl.dataset.cat); break;
       case 'salvar-edicao': await handleSaveEdit(); break;
       case 'aprovar-despesa': await handleApproveExpense(actionEl.dataset.id); break;
       case 'rejeitar-despesa': abrirDecisaoDespesa(actionEl.dataset.id, 'rejeitar'); break;
